@@ -79,6 +79,24 @@
             from { transform: translateY(-20px); opacity: 0; }
             to { transform: translateY(0); opacity: 1; }
         }
+        /* Toast notification styles */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 16px 24px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            z-index: 1000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            max-width: 350px;
+        }
+        .toast.show { transform: translateX(0); }
+        .toast.success { background-color: #10b981; }
+        .toast.error { background-color: #ef4444; }
+        .toast.info { background-color: #3b82f6; }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -91,7 +109,7 @@
                     <span class="text-2xl font-bold">Onpoint Group</span>
                 </div>
                 <div class="flex items-center space-x-6">
-                    <div class="flex items-center">
+                    <div class="flex items-center cursor-pointer" onclick="checkConnection()" title="Click to test connection">
                         <span id="connectionStatus" class="connection-status status-checking"></span>
                         <span id="connectionText" class="text-sm opacity-75">Checking connection...</span>
                     </div>
@@ -103,6 +121,9 @@
             </div>
         </div>
     </nav>
+
+    <!-- Toast Container -->
+    <div id="toastContainer"></div>
 
     <div class="container mx-auto px-6 py-8">
         <!-- Success Message Container -->
@@ -120,6 +141,20 @@
                     <i class="fa-regular fa-calendar mr-2 text-[#1e4b8c]"></i>
                     <span class="font-medium" id="currentDate"></span>
                 </div>
+            </div>
+        </div>
+
+        <!-- Connection Alert -->
+        <div id="connectionAlert" class="hidden mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+            <div class="flex items-center gap-3 text-red-700">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <div>
+                    <p class="font-semibold">Connection Error</p>
+                    <p class="text-sm">Unable to connect to Google Sheets. Please check your internet connection and try again.</p>
+                </div>
+                <button onclick="checkConnection()" class="ml-auto px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 text-sm">
+                    Retry
+                </button>
             </div>
         </div>
 
@@ -299,7 +334,7 @@
                 </div>
                 
                 <div class="flex items-end">
-                    <button onclick="submitDailyPerformance()" class="w-full btn-blue">
+                    <button onclick="submitDailyPerformance()" class="w-full btn-blue" id="submitBtn">
                         <i class="fa-regular fa-paper-plane mr-2"></i>Submit Daily Performance
                     </button>
                 </div>
@@ -376,6 +411,9 @@
                     <i class="fa-regular fa-clock text-white text-xl"></i>
                 </div>
                 <h2 class="text-xl font-semibold text-gray-800">Performance History</h2>
+                <button onclick="loadHistoryFromServer()" class="ml-auto text-sm text-[#1e4b8c] hover:underline">
+                    <i class="fa-solid fa-rotate-right mr-1"></i>Refresh
+                </button>
             </div>
             
             <div class="overflow-x-auto">
@@ -424,12 +462,19 @@
     </div>
 
     <script>
-        // IMPORTANT: Your Google Apps Script Web App URL
+        // ============================================
+        // CONFIGURATION - UPDATE THIS URL
+        // ============================================
+        // IMPORTANT: Replace with your actual deployed Web App URL
+        // Format: https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyhvqLzKbTgeF0iHSSPLx3F9N14j0MEOQhL_jWju6Z__fke7_VIhDwxswj4H5lhKory5A/exec';
         
-        // Global variables
+        // ============================================
+        // GLOBAL VARIABLES
+        // ============================================
         let weeklyChart, monthlyChart;
         let performanceData = [];
+        let isConnected = false;
         let currentProject = {
             costCenter: '',
             projectName: '',
@@ -446,6 +491,33 @@
             weeklyCost: 0,
             monthlyCost: 0
         };
+
+        // ============================================
+        // UTILITY FUNCTIONS
+        // ============================================
+        
+        // Show toast notification
+        function showToast(message, type = 'info', duration = 3000) {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-circle-exclamation' : 'fa-info-circle'}"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            container.appendChild(toast);
+            
+            // Trigger animation
+            setTimeout(() => toast.classList.add('show'), 100);
+            
+            // Remove after duration
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, duration);
+        }
 
         // Set current date
         document.getElementById('currentDate').textContent = moment().format('dddd, MMMM D, YYYY');
@@ -467,48 +539,9 @@
             `;
             successDiv.classList.remove('hidden');
             
-            // Auto hide after 5 seconds
             setTimeout(() => {
                 successDiv.classList.add('hidden');
             }, 5000);
-        }
-
-        // Check connection to Google Apps Script
-        async function checkConnection() {
-            const statusDot = document.getElementById('connectionStatus');
-            const statusText = document.getElementById('connectionText');
-            
-            statusDot.className = 'connection-status status-checking';
-            statusText.textContent = 'Checking connection...';
-            
-            try {
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'cors',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        action: 'test'
-                    })
-                });
-                
-                const result = await response.json();
-                
-                if (result.success) {
-                    statusDot.className = 'connection-status status-connected';
-                    statusText.textContent = 'Connected to Google Sheets';
-                    console.log('Connected to:', result);
-                } else {
-                    statusDot.className = 'connection-status status-disconnected';
-                    statusText.textContent = 'Connection failed';
-                }
-                
-            } catch (error) {
-                console.error('Connection error:', error);
-                statusDot.className = 'connection-status status-disconnected';
-                statusText.textContent = 'Disconnected - Check Settings';
-            }
         }
 
         // Show error modal
@@ -520,15 +553,93 @@
         // Close error modal
         function closeErrorModal() {
             document.getElementById('errorModal').style.display = 'none';
-            checkConnection();
         }
 
-        // Calculate project projections
+        // Show loading
+        function showLoading() {
+            document.getElementById('loadingOverlay').style.display = 'flex';
+        }
+
+        // Hide loading
+        function hideLoading() {
+            document.getElementById('loadingOverlay').style.display = 'none';
+        }
+
+        // ============================================
+        // CONNECTION HANDLING - FIXED
+        // ============================================
+        
+        async function checkConnection() {
+            const statusDot = document.getElementById('connectionStatus');
+            const statusText = document.getElementById('connectionText');
+            const alertBox = document.getElementById('connectionAlert');
+            
+            statusDot.className = 'connection-status status-checking';
+            statusText.textContent = 'Checking connection...';
+            alertBox.classList.add('hidden');
+            
+            try {
+                // Use a timeout to prevent hanging
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+                
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'test'
+                    }),
+                    signal: controller.signal
+                });
+                
+                clearTimeout(timeoutId);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    statusDot.className = 'connection-status status-connected';
+                    statusText.textContent = 'Connected to Google Sheets';
+                    isConnected = true;
+                    console.log('Connected:', result);
+                    showToast('Connected successfully!', 'success');
+                    
+                    // Load history if connected
+                    loadHistoryFromServer();
+                } else {
+                    throw new Error(result.message || 'Connection test failed');
+                }
+                
+            } catch (error) {
+                console.error('Connection error:', error);
+                statusDot.className = 'connection-status status-disconnected';
+                statusText.textContent = 'Disconnected - Check Settings';
+                isConnected = false;
+                alertBox.classList.remove('hidden');
+                showToast('Connection failed: ' + error.message, 'error', 5000);
+            }
+        }
+
+        // ============================================
+        // PROJECT CALCULATIONS
+        // ============================================
+        
         function calculateProjections() {
             const totalIncome = parseFloat(document.getElementById('totalIncome').value) || 0;
             const totalCost = parseFloat(document.getElementById('totalCost').value) || 0;
             const durationType = document.getElementById('durationType').value;
             const duration = parseInt(document.getElementById('duration').value) || 1;
+            
+            if (!totalIncome || !duration) {
+                showError('Please enter valid total income and duration');
+                return;
+            }
             
             // Calculate total days based on duration type
             let totalDays = duration;
@@ -577,10 +688,13 @@
             // Initialize charts with projected data
             initializeCharts();
             
-            showSuccessMessage('Project projections calculated successfully!');
+            showToast('Project projections calculated successfully!', 'success');
         }
 
-        // Initialize charts
+        // ============================================
+        // CHARTS
+        // ============================================
+        
         function initializeCharts() {
             // Weekly Chart
             const weeklyCtx = document.getElementById('weeklyChart').getContext('2d');
@@ -643,7 +757,39 @@
             });
         }
 
-        // Upload image to Google Drive via Apps Script
+        function updateCharts() {
+            // Update weekly chart
+            const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+            const weekActual = weekDays.map((day, index) => {
+                const date = moment().startOf('week').add(index, 'days').format('YYYY-MM-DD');
+                const dayRecords = performanceData.filter(r => r.date === date);
+                return dayRecords.reduce((sum, r) => sum + parseFloat(r.dailyIncome || 0), 0);
+            });
+            
+            if (weeklyChart) {
+                weeklyChart.data.datasets[1].data = weekActual;
+                weeklyChart.update();
+            }
+            
+            // Update monthly chart
+            const weekActualTotals = [0, 0, 0, 0];
+            performanceData.forEach(record => {
+                const weekOfMonth = Math.floor(moment(record.date).diff(moment().startOf('month'), 'days') / 7);
+                if (weekOfMonth >= 0 && weekOfMonth < 4) {
+                    weekActualTotals[weekOfMonth] += parseFloat(record.dailyIncome || 0);
+                }
+            });
+            
+            if (monthlyChart) {
+                monthlyChart.data.datasets[1].data = weekActualTotals;
+                monthlyChart.update();
+            }
+        }
+
+        // ============================================
+        // IMAGE UPLOAD
+        // ============================================
+        
         async function uploadImageToDrive(file) {
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
@@ -651,6 +797,9 @@
                     const base64Data = e.target.result.split(',')[1];
                     
                     try {
+                        const controller = new AbortController();
+                        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout for images
+                        
                         const response = await fetch(SCRIPT_URL, {
                             method: 'POST',
                             mode: 'cors',
@@ -663,13 +812,20 @@
                                 fileData: base64Data,
                                 mimeType: file.type,
                                 folderId: '1al8guXtgk-PJWwdNvd2umUXYv4AvwXSM'
-                            })
+                            }),
+                            signal: controller.signal
                         });
+                        
+                        clearTimeout(timeoutId);
+                        
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
                         
                         const result = await response.json();
                         
                         if (result.success) {
-                            resolve(result.data.fileUrl);
+                            resolve(result.data.viewUrl || result.data.fileUrl);
                         } else {
                             reject(result.message);
                         }
@@ -679,12 +835,21 @@
                         reject(error);
                     }
                 };
+                reader.onerror = () => reject(new Error('Failed to read file'));
                 reader.readAsDataURL(file);
             });
         }
 
-        // Submit daily performance
+        // ============================================
+        // FORM SUBMISSION - FIXED
+        // ============================================
+        
         async function submitDailyPerformance() {
+            if (!isConnected) {
+                showError('Not connected to Google Sheets. Please check your connection first.');
+                return;
+            }
+            
             const projectManager = document.getElementById('projectManager').value;
             const dailyIncome = parseFloat(document.getElementById('dailyIncome').value) || 0;
             const summary = document.getElementById('dailySummary').value;
@@ -718,8 +883,12 @@
                 return;
             }
             
-            // Show loading
-            document.getElementById('loadingOverlay').style.display = 'flex';
+            // Disable submit button
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Submitting...';
+            
+            showLoading();
             
             try {
                 // Calculate variance
@@ -727,19 +896,23 @@
                 
                 // Upload images to Google Drive
                 const imageLinks = [];
-                for (let i = 0; i < Math.min(images.length, 5); i++) {
-                    try {
-                        const imageLink = await uploadImageToDrive(images[i]);
-                        if (imageLink) {
-                            imageLinks.push(imageLink);
+                if (images.length > 0) {
+                    showToast(`Uploading ${images.length} image(s)...`, 'info');
+                    
+                    for (let i = 0; i < Math.min(images.length, 5); i++) {
+                        try {
+                            const imageLink = await uploadImageToDrive(images[i]);
+                            if (imageLink) {
+                                imageLinks.push(imageLink);
+                            }
+                        } catch (error) {
+                            console.error('Error uploading image:', error);
+                            showToast(`Failed to upload image ${i + 1}: ${error.message}`, 'error');
                         }
-                    } catch (error) {
-                        console.error('Error uploading image:', error);
-                        // Continue with other images even if one fails
                     }
                 }
                 
-                // Create performance record matching your Google Sheet headers
+                // Create performance record
                 const record = {
                     date: moment().format('YYYY-MM-DD'),
                     projectManager: projectManager,
@@ -755,6 +928,9 @@
                 };
                 
                 // Send to Google Sheets via Apps Script
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+                
                 const response = await fetch(SCRIPT_URL, {
                     method: 'POST',
                     mode: 'cors',
@@ -764,8 +940,15 @@
                     body: JSON.stringify({
                         action: 'savePerformance',
                         record: record
-                    })
+                    }),
+                    signal: controller.signal
                 });
+                
+                clearTimeout(timeoutId);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
                 
                 const result = await response.json();
                 
@@ -796,53 +979,54 @@
                     document.getElementById('dailySummary').value = '';
                     document.getElementById('imageUpload').value = '';
                     
-                    // Hide loading
-                    document.getElementById('loadingOverlay').style.display = 'none';
-                    
-                    // Show success message
-                    showSuccessMessage('Daily performance submitted successfully to Google Sheets!');
+                    showToast('Daily performance submitted successfully!', 'success');
                     
                 } else {
                     throw new Error(result.message || 'Failed to save to Google Sheets');
                 }
                 
             } catch (error) {
-                console.error('Error saving to Google Sheets:', error);
-                document.getElementById('loadingOverlay').style.display = 'none';
-                showError('Failed to save data to Google Sheets: ' + error.message);
+                console.error('Error saving:', error);
+                showError('Failed to save data: ' + error.message);
+            } finally {
+                hideLoading();
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fa-regular fa-paper-plane mr-2"></i>Submit Daily Performance';
             }
         }
 
-        // Update performance cards
+        // ============================================
+        // PERFORMANCE DISPLAY
+        // ============================================
+        
         function updatePerformanceCards() {
             // Calculate today's performance
             const todayRecords = performanceData.filter(r => r.date === moment().format('YYYY-MM-DD'));
-            const todayTotal = todayRecords.reduce((sum, r) => sum + parseFloat(r.dailyIncome), 0);
-            const todayPerformance = (todayTotal / currentProject.dailyTarget) * 100;
+            const todayTotal = todayRecords.reduce((sum, r) => sum + parseFloat(r.dailyIncome || 0), 0);
+            const todayPerformance = currentProject.dailyTarget > 0 ? (todayTotal / currentProject.dailyTarget) * 100 : 0;
             
-            document.getElementById('todayPerformance').textContent = `${isNaN(todayPerformance) ? '0' : todayPerformance.toFixed(1)}%`;
+            document.getElementById('todayPerformance').textContent = `${todayPerformance.toFixed(1)}%`;
             document.getElementById('todayActual').textContent = `R ${todayTotal.toFixed(2)}`;
             
             // Calculate weekly performance
             const weekStart = moment().startOf('week');
             const weekRecords = performanceData.filter(r => moment(r.date).isSameOrAfter(weekStart));
-            const weekTotal = weekRecords.reduce((sum, r) => sum + parseFloat(r.dailyIncome), 0);
-            const weekPerformance = (weekTotal / currentProject.weeklyTarget) * 100;
+            const weekTotal = weekRecords.reduce((sum, r) => sum + parseFloat(r.dailyIncome || 0), 0);
+            const weekPerformance = currentProject.weeklyTarget > 0 ? (weekTotal / currentProject.weeklyTarget) * 100 : 0;
             
-            document.getElementById('weeklyPerformance').textContent = `${isNaN(weekPerformance) ? '0' : weekPerformance.toFixed(1)}%`;
+            document.getElementById('weeklyPerformance').textContent = `${weekPerformance.toFixed(1)}%`;
             document.getElementById('weeklyActual').textContent = `R ${weekTotal.toFixed(2)}`;
             
             // Calculate monthly performance
             const monthStart = moment().startOf('month');
             const monthRecords = performanceData.filter(r => moment(r.date).isSameOrAfter(monthStart));
-            const monthTotal = monthRecords.reduce((sum, r) => sum + parseFloat(r.dailyIncome), 0);
-            const monthPerformance = (monthTotal / currentProject.monthlyTarget) * 100;
+            const monthTotal = monthRecords.reduce((sum, r) => sum + parseFloat(r.dailyIncome || 0), 0);
+            const monthPerformance = currentProject.monthlyTarget > 0 ? (monthTotal / currentProject.monthlyTarget) * 100 : 0;
             
-            document.getElementById('monthlyPerformance').textContent = `${isNaN(monthPerformance) ? '0' : monthPerformance.toFixed(1)}%`;
+            document.getElementById('monthlyPerformance').textContent = `${monthPerformance.toFixed(1)}%`;
             document.getElementById('monthlyActual').textContent = `R ${monthTotal.toFixed(2)}`;
         }
 
-        // Add record to history table
         function addToHistoryTable(record) {
             const tbody = document.getElementById('historyTable');
             
@@ -850,19 +1034,21 @@
             const row = tbody.insertRow(0);
             
             // Format variance class
-            const varianceClass = parseFloat(record.variance) >= 0 ? 'text-green-600' : 'text-red-600';
+            const varianceValue = parseFloat(record.variance || 0);
+            const varianceClass = varianceValue >= 0 ? 'text-green-600' : 'text-red-600';
+            const varianceSign = varianceValue > 0 ? '+' : '';
             
             row.innerHTML = `
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${record.date}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${record.projectManager}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${record.costCenter || '-'}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${record.projectName}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">R ${record.dailyTarget}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">R ${record.dailyIncome}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm ${varianceClass}">${record.variance}%</td>
-                <td class="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">${record.dailySummary || '-'}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">R ${parseFloat(record.dailyTarget || 0).toFixed(2)}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">R ${parseFloat(record.dailyIncome || 0).toFixed(2)}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm ${varianceClass} font-semibold">${varianceSign}${record.variance}%</td>
+                <td class="px-6 py-4 text-sm text-gray-900 max-w-xs truncate" title="${record.dailySummary || ''}">${record.dailySummary || '-'}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    ${record.imageLinks ? '<i class="fa-regular fa-image text-[#1e4b8c]" title="Images uploaded"></i>' : '-'}
+                    ${record.imageLinks ? `<a href="${record.imageLinks.split(',')[0]}" target="_blank" class="text-[#1e4b8c] hover:underline"><i class="fa-regular fa-image"></i> View</a>` : '-'}
                 </td>
             `;
             
@@ -872,40 +1058,87 @@
             }
         }
 
-        // Update charts with actual data
-        function updateCharts() {
-            // Update weekly chart
-            const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-            const weekActual = weekDays.map((day, index) => {
-                const date = moment().startOf('week').add(index, 'days').format('YYYY-MM-DD');
-                const dayRecords = performanceData.filter(r => r.date === date);
-                return dayRecords.reduce((sum, r) => sum + parseFloat(r.dailyIncome), 0);
-            });
-            
-            if (weeklyChart) {
-                weeklyChart.data.datasets[1].data = weekActual;
-                weeklyChart.update();
+        // ============================================
+        // LOAD HISTORY FROM SERVER - NEW
+        // ============================================
+        
+        async function loadHistoryFromServer() {
+            if (!isConnected) {
+                showToast('Not connected. Please check connection first.', 'error');
+                return;
             }
             
-            // Update monthly chart
-            const weekActualTotals = [0, 0, 0, 0];
-            performanceData.forEach(record => {
-                const weekOfMonth = Math.floor(moment(record.date).diff(moment().startOf('month'), 'days') / 7);
-                if (weekOfMonth >= 0 && weekOfMonth < 4) {
-                    weekActualTotals[weekOfMonth] += parseFloat(record.dailyIncome);
-                }
-            });
+            showToast('Loading history...', 'info');
             
-            if (monthlyChart) {
-                monthlyChart.data.datasets[1].data = weekActualTotals;
-                monthlyChart.update();
+            try {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000);
+                
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'getHistory'
+                    }),
+                    signal: controller.signal
+                });
+                
+                clearTimeout(timeoutId);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                
+                if (result.success && result.data && result.data.records) {
+                    // Clear existing table
+                    const tbody = document.getElementById('historyTable');
+                    tbody.innerHTML = '';
+                    
+                    // Add records to table
+                    result.data.records.reverse().forEach(record => {
+                        // Convert array to object if needed
+                        const recordObj = Array.isArray(record) ? {
+                            date: record[0],
+                            projectManager: record[1],
+                            projectName: record[2],
+                            costCenter: record[3],
+                            dailyTarget: record[4],
+                            dailyIncome: record[5],
+                            variance: record[6],
+                            dailySummary: record[7],
+                            imageLinks: record[8]
+                        } : record;
+                        
+                        addToHistoryTable(recordObj);
+                        performanceData.push(recordObj);
+                    });
+                    
+                    updatePerformanceCards();
+                    updateCharts();
+                    
+                    showToast(`Loaded ${result.data.records.length} records`, 'success');
+                } else {
+                    showToast('No history data available', 'info');
+                }
+                
+            } catch (error) {
+                console.error('Error loading history:', error);
+                showToast('Failed to load history: ' + error.message, 'error');
             }
         }
 
-        // Generate PDF Report
+        // ============================================
+        // PDF GENERATION
+        // ============================================
+        
         async function generatePDFReport() {
             try {
-                document.getElementById('loadingOverlay').style.display = 'flex';
+                showLoading();
                 
                 const { jsPDF } = window.jspdf;
                 const pdf = new jsPDF('p', 'mm', 'a4');
@@ -926,6 +1159,7 @@
                 const projectName = document.getElementById('projectName').value || 'Not Selected';
                 
                 pdf.setFontSize(10);
+                pdf.setTextColor(0, 0, 0);
                 pdf.text(`Project Manager: ${projectManager}`, 20, 40);
                 pdf.text(`Cost Center: ${costCenter}`, 20, 45);
                 pdf.text(`Project: ${projectName}`, 20, 50);
@@ -995,19 +1229,19 @@
                         pdf.rect(20, yPos - 4, 170, 6, 'F');
                     }
                     
-                    pdf.text(entry.date, 22, yPos);
-                    pdf.text(entry.projectManager.substring(0, 8), 52, yPos);
+                    pdf.text(entry.date || '', 22, yPos);
+                    pdf.text((entry.projectManager || '').substring(0, 8), 52, yPos);
                     pdf.text((entry.costCenter || '').substring(0, 10), 82, yPos);
-                    pdf.text(`R${entry.dailyTarget}`, 122, yPos);
-                    pdf.text(`R${entry.dailyIncome}`, 152, yPos);
+                    pdf.text(`R${entry.dailyTarget || '0'}`, 122, yPos);
+                    pdf.text(`R${entry.dailyIncome || '0'}`, 152, yPos);
                     
-                    const variance = parseFloat(entry.variance);
+                    const variance = parseFloat(entry.variance || 0);
                     if (variance >= 0) {
                         pdf.setTextColor(16, 185, 129);
                     } else {
                         pdf.setTextColor(239, 68, 68);
                     }
-                    pdf.text(`${entry.variance}%`, 182, yPos);
+                    pdf.text(`${entry.variance || '0'}%`, 182, yPos);
                     
                     pdf.setTextColor(0, 0, 0);
                     yPos += 6;
@@ -1022,17 +1256,20 @@
                 // Save the PDF
                 pdf.save(`Performance_Report_${moment().format('YYYYMMDD_HHmm')}.pdf`);
                 
-                document.getElementById('loadingOverlay').style.display = 'none';
-                showSuccessMessage('PDF report generated successfully!');
+                hideLoading();
+                showToast('PDF report generated successfully!', 'success');
                 
             } catch (error) {
                 console.error('Error generating PDF:', error);
-                document.getElementById('loadingOverlay').style.display = 'none';
-                showError('Error generating PDF report. Please try again.');
+                hideLoading();
+                showError('Error generating PDF report: ' + error.message);
             }
         }
 
-        // Load sample data for demonstration
+        // ============================================
+        // SAMPLE DATA
+        // ============================================
+        
         function loadSampleData() {
             // Set sample project
             document.getElementById('costCenter').value = 'Onpoint Group HQ';
@@ -1089,17 +1326,22 @@
             updateCharts();
         }
 
-        // Initialize on page load
+        // ============================================
+        // INITIALIZATION
+        // ============================================
+        
         document.addEventListener('DOMContentLoaded', function() {
-            // Check connection to Google Apps Script
-            checkConnection();
-            
             // Set default dates
             document.getElementById('startDate').value = moment().format('YYYY-MM-DD');
             document.getElementById('endDate').value = moment().add(30, 'days').format('YYYY-MM-DD');
             
             // Load sample data
             loadSampleData();
+            
+            // Check connection after a short delay
+            setTimeout(() => {
+                checkConnection();
+            }, 1000);
             
             // Check connection every 30 seconds
             setInterval(checkConnection, 30000);
