@@ -424,8 +424,8 @@
     </div>
 
     <script>
-        // IMPORTANT: Replace this with your actual Google Apps Script Web App URL
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw4vSw5MQcZ_aVKVh8HW5Jyzxx7_e93pPwjUulHF-d7QW5GPBDOo1FG2LXixmO7uCYbYQ/exec';
+        // IMPORTANT: This will be replaced with your actual Google Apps Script Web App URL after deployment
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzXWWXnT8Da31wxwvAYKG6vi2sMdCa0ts5-ZxnQWDiN3sO0vGSFhk5RWdsBcfOhBKhYCA/exec';
         
         // Global variables
         let weeklyChart, monthlyChart;
@@ -576,6 +576,8 @@
             
             // Initialize charts with projected data
             initializeCharts();
+            
+            showSuccessMessage('Project projections calculated successfully!');
         }
 
         // Initialize charts
@@ -656,17 +658,18 @@
                                 'Content-Type': 'application/json',
                             },
                             body: JSON.stringify({
-                                action: 'upload',
+                                action: 'uploadImage',
                                 fileName: file.name,
                                 fileData: base64Data,
-                                mimeType: file.type
+                                mimeType: file.type,
+                                folderId: '1al8guXtgk-PJWwdNvd2umUXYv4AvwXSM' // Your Google Drive folder ID
                             })
                         });
                         
                         const result = await response.json();
                         
                         if (result.success) {
-                            resolve(result.url);
+                            resolve(result.fileUrl);
                         } else {
                             reject(result.message);
                         }
@@ -687,62 +690,71 @@
             const summary = document.getElementById('dailySummary').value;
             const images = document.getElementById('imageUpload').files;
             const costCenter = document.getElementById('costCenter').value;
+            const projectName = document.getElementById('projectName').value;
             
+            // Validation
             if (!projectManager) {
-                alert('Please select a project manager');
+                showError('Please select a project manager');
                 return;
             }
             
             if (!costCenter) {
-                alert('Please select a cost center');
+                showError('Please select a cost center');
                 return;
             }
             
-            if (!dailyIncome) {
-                alert('Please enter today\'s income');
+            if (!projectName) {
+                showError('Please enter a project name');
+                return;
+            }
+            
+            if (!dailyIncome || dailyIncome <= 0) {
+                showError('Please enter a valid daily income amount');
                 return;
             }
             
             if (!currentProject.projectName) {
-                alert('Please calculate project projections first');
+                showError('Please calculate project projections first');
                 return;
             }
             
             // Show loading
             document.getElementById('loadingOverlay').style.display = 'flex';
             
-            // Calculate variance
-            const variance = ((dailyIncome - currentProject.dailyTarget) / currentProject.dailyTarget) * 100;
-            
-            // Upload images to Google Drive
-            const imageLinks = [];
-            for (let i = 0; i < Math.min(images.length, 5); i++) {
-                try {
-                    const imageLink = await uploadImageToDrive(images[i]);
-                    if (imageLink) {
-                        imageLinks.push(imageLink);
-                    }
-                } catch (error) {
-                    console.error('Error uploading image:', error);
-                }
-            }
-            
-            // Create performance record
-            const record = {
-                date: moment().format('YYYY-MM-DD'),
-                projectManager: projectManager,
-                projectName: currentProject.projectName,
-                costCenter: currentProject.costCenter,
-                dailyTarget: currentProject.dailyTarget.toFixed(2),
-                dailyIncome: dailyIncome.toFixed(2),
-                variance: variance.toFixed(2),
-                summary: summary,
-                images: imageLinks.join(', '),
-                timestamp: moment().format('YYYY-MM-DD HH:mm:ss'),
-                userEmail: 'webapp@onpointgroup.com'
-            };
-            
             try {
+                // Calculate variance
+                const variance = ((dailyIncome - currentProject.dailyTarget) / currentProject.dailyTarget) * 100;
+                
+                // Upload images to Google Drive
+                const imageLinks = [];
+                for (let i = 0; i < Math.min(images.length, 5); i++) {
+                    try {
+                        const imageLink = await uploadImageToDrive(images[i]);
+                        if (imageLink) {
+                            imageLinks.push(imageLink);
+                        }
+                    } catch (error) {
+                        console.error('Error uploading image:', error);
+                        // Continue with other images even if one fails
+                    }
+                }
+                
+                // Create performance record matching your Google Sheet headers
+                const record = {
+                    date: moment().format('YYYY-MM-DD'),
+                    projectManager: projectManager,
+                    projectName: currentProject.projectName,
+                    costCenter: currentProject.costCenter,
+                    dailyTarget: currentProject.dailyTarget.toFixed(2),
+                    dailyIncome: dailyIncome.toFixed(2),
+                    variance: variance.toFixed(2),
+                    dailySummary: summary,
+                    imageLinks: imageLinks.join(', '),
+                    submissionTimestamp: moment().format('YYYY-MM-DD HH:mm:ss'),
+                    userEmail: 'webapp@onpointgroup.com',
+                    serverTimestamp: '' // Will be filled by Apps Script
+                };
+                
                 // Send to Google Sheets via Apps Script
                 const response = await fetch(SCRIPT_URL, {
                     method: 'POST',
@@ -751,7 +763,9 @@
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        action: 'save',
+                        action: 'savePerformance',
+                        sheetId: '1jZfSTARjtEhps_UpUAiZIS_h28l7plIihjCk5vI4eR4',
+                        sheetName: 'Manager Assessment',
                         record: record
                     })
                 });
@@ -792,7 +806,7 @@
                     showSuccessMessage('Daily performance submitted successfully to Google Sheets!');
                     
                 } else {
-                    throw new Error(result.message);
+                    throw new Error(result.message || 'Failed to save to Google Sheets');
                 }
                 
             } catch (error) {
@@ -835,12 +849,11 @@
         function addToHistoryTable(record) {
             const tbody = document.getElementById('historyTable');
             
-            // Check if we already have 10 records, remove the oldest if needed
-            if (tbody.children.length >= 10) {
-                tbody.deleteRow(tbody.children.length - 1);
-            }
-            
+            // Create new row
             const row = tbody.insertRow(0);
+            
+            // Format variance class
+            const varianceClass = parseFloat(record.variance) >= 0 ? 'text-green-600' : 'text-red-600';
             
             row.innerHTML = `
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${record.date}</td>
@@ -849,12 +862,17 @@
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${record.projectName}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">R ${record.dailyTarget}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">R ${record.dailyIncome}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm ${parseFloat(record.variance) >= 0 ? 'text-green-600' : 'text-red-600'}">${record.variance}%</td>
-                <td class="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">${record.summary || '-'}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm ${varianceClass}">${record.variance}%</td>
+                <td class="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">${record.dailySummary || '-'}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    ${record.images ? '<i class="fa-regular fa-image text-[#1e4b8c]" title="Images uploaded"></i>' : '-'}
+                    ${record.imageLinks ? '<i class="fa-regular fa-image text-[#1e4b8c]" title="Images uploaded"></i>' : '-'}
                 </td>
             `;
+            
+            // Keep only last 20 records in the table
+            while (tbody.children.length > 20) {
+                tbody.deleteRow(tbody.children.length - 1);
+            }
         }
 
         // Update charts with actual data
@@ -1061,8 +1079,9 @@
                     projectName: currentProject.projectName,
                     dailyTarget: currentProject.dailyTarget.toFixed(2),
                     variance: variance.toFixed(2),
-                    images: '',
-                    timestamp: moment().format('YYYY-MM-DD HH:mm:ss')
+                    imageLinks: '',
+                    dailySummary: record.summary,
+                    submissionTimestamp: moment().format('YYYY-MM-DD HH:mm:ss')
                 };
                 
                 performanceData.push(fullRecord);
