@@ -1,0 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Onpoint Group - Project Manager Performance Tracker</title>
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <!-- Google Sheets API -->
+    <script src="https://apis.google.com/js/api.js"></script>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Moment.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        * { font-family: 'Inter', sans-serif; }
+        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .card-hover { transition: all 0.3s ease; }
+        .card-hover:hover { transform: translateY(-5px); box-shadow: 0 10px 40px rgba(0,0,0,0.1); }
+        .animate-pulse-slow { animation: pulse 3s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.8; } }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Navigation -->
+    <nav class="gradient-bg text-white shadow-lg">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <i class="fa-solid fa-chart-line text-3xl"></i>
+                    <span class="text-2xl font-bold">Onpoint Group</span>
+                </div>
+                <div class="flex items-center space-x-6">
+                    <span class="text-sm opacity-75">Project Manager Performance Tracker</span>
+                    <div class="h-8 w-8 bg-white rounded-full flex items-center justify-center">
+                        <i class="fa-regular fa-user text-purple-600"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-6 py-8">
+        <!-- Header with Date -->
+        <div class="flex justify-between items-center mb-8">
+            <h1 class="text-3xl font-bold text-gray-800">Dashboard</h1>
+            <div class="bg-white px-6 py-3 rounded-lg shadow-sm">
+                <i class="fa-regular fa-calendar mr-2 text-purple-600"></i>
+                <span class="font-medium" id="currentDate"></span>
+            </div>
+        </div>
+
+        <!-- Project Manager Selection -->
+        <div class="bg-white rounded-xl shadow-sm p-6 mb-8 card-hover">
+            <div class="flex items-center space-x-4 mb-6">
+                <div class="w-12 h-12 gradient-bg rounded-lg flex items-center justify-center">
+                    <i class="fa-regular fa-user text-white text-xl"></i>
+                </div>
+                <h2 class="text-xl font-semibold text-gray-800">Select Project Manager</h2>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+                <select id="projectManager" class="col-span-2 md:col-span-4 lg:col-span-7 p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                    <option value="">Choose Project Manager...</option>
+                    <option value="Moses">Moses</option>
+                    <option value="Johan">Johan</option>
+                    <option value="Siyanda">Siyanda</option>
+                    <option value="Dave">Dave</option>
+                    <option value="James">James</option>
+                    <option value="Rayman">Rayman</option>
+                    <option value="Timothy">Timothy</option>
+                    <option value="Starnley">Starnley</option>
+                    <option value="Brian">Brian</option>
+                    <option value="EL CM">EL CM</option>
+                    <option value="Govern">Govern</option>
+                    <option value="Elroy">Elroy</option>
+                    <option value="Mesh">Mesh</option>
+                    <option value="Vusi">Vusi</option>
+                    <option value="Tinotenda">Tinotenda</option>
+                    <option value="Sydney">Sydney</option>
+                    <option value="Graham">Graham</option>
+                    <option value="Andrew">Andrew</option>
+                    <option value="Philip">Philip</option>
+                    <option value="Moeti">Moeti</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Project Setup Form -->
+        <div class="bg-white rounded-xl shadow-sm p-6 mb-8 card-hover">
+            <div class="flex items-center space-x-4 mb-6">
+                <div class="w-12 h-12 gradient-bg rounded-lg flex items-center justify-center">
+                    <i class="fa-regular fa-building text-white text-xl"></i>
+                </div>
+                <h2 class="text-xl font-semibold text-gray-800">Project Setup</h2>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Cost Center</label>
+                    <input type="text" id="costCenter" class="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500" placeholder="Enter cost center">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Project Name</label>
+                    <input type="text" id="projectName" class="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500" placeholder="Enter project name">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Project Total Income (R)</label>
+                    <input type="number" id="totalIncome" class="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500" placeholder="0.00">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Project Total Cost (R)</label>
+                    <input type="number" id="totalCost" class="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500" placeholder="0.00">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
+                    <input type="date" id="startDate" class="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Expected End Date</label>
+                    <input type="date" id="endDate" class="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Duration Type</label>
+                    <select id="durationType" class="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500">
+                        <option value="days">Days</option>
+                        <option value="months">Months</option>
+                        <option value="years">Years</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Duration (1-31)</label>
+                    <input type="number" id="duration" min="1" max="31" class="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500" placeholder="Enter duration">
+                </div>
+                
+                <div class="flex items-end">
+                    <button onclick="calculateProjections()" class="w-full gradient-bg text-white px-6 py-3 rounded-lg hover:opacity-90 transition-all font-medium">
+                        <i class="fa-solid fa-calculator mr-2"></i>Calculate Projections
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Projected Earnings Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white rounded-xl shadow-sm p-6 card-hover">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <i class="fa-regular fa-sun text-blue-600 text-xl"></i>
+                    </div>
+                    <span class="text-sm font-medium text-blue-600 bg-blue-50 px-3 py-1 rounded-full">Daily Target</span>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-800 mb-2" id="dailyTarget">R 0</h3>
+                <p class="text-sm text-gray-500">Expected daily income</p>
+                <div class="mt-4 pt-4 border-t border-gray-100">
+                    <p class="text-sm text-gray-600"><span class="font-medium">Daily Cost:</span> <span id="dailyCost">R 0</span></p>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow-sm p-6 card-hover">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                        <i class="fa-regular fa-calendar-week text-green-600 text-xl"></i>
+                    </div>
+                    <span class="text-sm font-medium text-green-600 bg-green-50 px-3 py-1 rounded-full">Weekly Target</span>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-800 mb-2" id="weeklyTarget">R 0</h3>
+                <p class="text-sm text-gray-500">Expected weekly income</p>
+                <div class="mt-4 pt-4 border-t border-gray-100">
+                    <p class="text-sm text-gray-600"><span class="font-medium">Weekly Cost:</span> <span id="weeklyCost">R 0</span></p>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow-sm p-6 card-hover">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                        <i class="fa-regular fa-calendar text-purple-600 text-xl"></i>
+                    </div>
+                    <span class="text-sm font-medium text-purple-600 bg-purple-50 px-3 py-1 rounded-full">Monthly Target</span>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-800 mb-2" id="monthlyTarget">R 0</h3>
+                <p class="text-sm text-gray-500">Expected monthly income</p>
+                <div class="mt-4 pt-4 border-t border-gray-100">
+                    <p class="text-sm text-gray-600"><span class="font-medium">Monthly Cost:</span> <span id="monthlyCost">R 0</span></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Daily Performance Input -->
+        <div class="bg-white rounded-xl shadow-sm p-6 mb-8 card-hover">
+            <div class="flex items-center space-x-4 mb-6">
+                <div class="w-12 h-12 gradient-bg rounded-lg flex items-center justify-center">
+                    <i class="fa-regular fa-clock text-white text-xl"></i>
+                </div>
+                <h2 class="text-xl font-semibold text-gray-800">Daily Performance Update</h2>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Today's Income (R)</label>
+                    <input type="number" id="dailyIncome" class="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500" placeholder="Enter today's income">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Daily Summary / Comments</label>
+                    <textarea id="dailySummary" rows="3" class="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500" placeholder="Provide summary for the day or reasons for not meeting target..."></textarea>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Upload Images</label>
+                    <input type="file" id="imageUpload" multiple accept="image/*" class="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500">
+                    <p class="text-xs text-gray-500 mt-1">Max 5 images (will be converted to links)</p>
+                </div>
+                
+                <div class="flex items-end">
+                    <button onclick="submitDailyPerformance()" class="w-full gradient-bg text-white px-6 py-3 rounded-lg hover:opacity-90 transition-all font-medium">
+                        <i class="fa-regular fa-paper-plane mr-2"></i>Submit Daily Performance
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Variance Display -->
+            <div id="varianceDisplay" class="mt-6 p-4 bg-gray-50 rounded-lg hidden">
+                <div class="flex items-center justify-between">
+                    <span class="font-medium">Daily Performance Variance:</span>
+                    <span id="variancePercentage" class="text-xl font-bold"></span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2.5 mt-2">
+                    <div id="varianceBar" class="h-2.5 rounded-full" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Performance Charts -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <div class="bg-white rounded-xl shadow-sm p-6 card-hover">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Weekly Performance</h3>
+                <canvas id="weeklyChart"></canvas>
+            </div>
+            
+            <div class="bg-white rounded-xl shadow-sm p-6 card-hover">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Monthly Performance</h3>
+                <canvas id="monthlyChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Performance Summary Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-sm p-6 text-white">
+                <div class="flex items-center justify-between mb-4">
+                    <i class="fa-regular fa-sun text-3xl opacity-75"></i>
+                    <span class="text-sm font-medium bg-white bg-opacity-20 px-3 py-1 rounded-full">Today</span>
+                </div>
+                <h3 class="text-3xl font-bold mb-2" id="todayPerformance">0%</h3>
+                <p class="text-sm opacity-90">of daily target achieved</p>
+                <div class="mt-4 pt-4 border-t border-white border-opacity-20">
+                    <p class="text-sm"><span class="opacity-75">Actual:</span> <span id="todayActual">R 0</span></p>
+                </div>
+            </div>
+            
+            <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-sm p-6 text-white">
+                <div class="flex items-center justify-between mb-4">
+                    <i class="fa-regular fa-calendar-week text-3xl opacity-75"></i>
+                    <span class="text-sm font-medium bg-white bg-opacity-20 px-3 py-1 rounded-full">This Week</span>
+                </div>
+                <h3 class="text-3xl font-bold mb-2" id="weeklyPerformance">0%</h3>
+                <p class="text-sm opacity-90">of weekly target achieved</p>
+                <div class="mt-4 pt-4 border-t border-white border-opacity-20">
+                    <p class="text-sm"><span class="opacity-75">Actual:</span> <span id="weeklyActual">R 0</span></p>
+                </div>
+            </div>
+            
+            <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-sm p-6 text-white">
+                <div class="flex items-center justify-between mb-4">
+                    <i class="fa-regular fa-calendar text-3xl opacity-75"></i>
+                    <span class="text-sm font-medium bg-white bg-opacity-20 px-3 py-1 rounded-full">This Month</span>
+                </div>
+                <h3 class="text-3xl font-bold mb-2" id="monthlyPerformance">0%</h3>
+                <p class="text-sm opacity-90">of monthly target achieved</p>
+                <div class="mt-4 pt-4 border-t border-white border-opacity-20">
+                    <p class="text-sm"><span class="opacity-75">Actual:</span> <span id="monthlyActual">R 0</span></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Historical Records -->
+        <div class="bg-white rounded-xl shadow-sm p-6 card-hover">
+            <div class="flex items-center space-x-4 mb-6">
+                <div class="w-12 h-12 gradient-bg rounded-lg flex items-center justify-center">
+                    <i class="fa-regular fa-clock text-white text-xl"></i>
+                </div>
+                <h2 class="text-xl font-semibold text-gray-800">Performance History</h2>
+            </div>
+            
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead>
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Project</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Target</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actual</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Variance</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Summary</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Images</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyTable" class="bg-white divide-y divide-gray-200">
+                        <!-- History rows will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-lg p-8 flex flex-col items-center">
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mb-4"></div>
+            <p class="text-gray-600">Processing...</p>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let weeklyChart, monthlyChart;
+        let performanceData = [];
+        let currentProject = {
+            costCenter: '',
+            projectName: '',
+            totalIncome: 0,
+            totalCost: 0,
+            startDate: '',
+            endDate: '',
+            durationType: 'days',
+            duration: 0,
+            dailyTarget: 0,
+            weeklyTarget: 0,
+            monthlyTarget: 0,
+            dailyCost: 0,
+            weeklyCost: 0,
+            monthlyCost: 0
+        };
+
+        // Initialize Google Sheets API
+        function initGoogleSheets() {
+            gapi.load('client:auth2', function() {
+                gapi.client.init({
+                    apiKey: 'YOUR_API_KEY',
+                    clientId: 'YOUR_CLIENT_ID',
+                    discoveryDocs: ['https://sheets.googleapis.com/$discovery/rest?version=v4'],
+                    scope: 'https://www.googleapis.com/auth/spreadsheets'
+                }).then(function() {
+                    console.log('Google Sheets API initialized');
+                });
+            });
+        }
+
+        // Set current date
+        document.getElementById('currentDate').textContent = moment().format('dddd, MMMM D, YYYY');
+
+        // Calculate project projections
+        function calculateProjections() {
+            const totalIncome = parseFloat(document.getElementById('totalIncome').value) || 0;
+            const totalCost = parseFloat(document.getElementById('totalCost').value) || 0;
+            const durationType = document.getElementById('durationType').value;
+            const duration = parseInt(document.getElementById('duration').value) || 1;
+            
+            // Calculate total days based on duration type
+            let totalDays = duration;
+            if (durationType === 'months') {
+                totalDays = duration * 30;
+            } else if (durationType === 'years') {
+                totalDays = duration * 365;
+            }
+            
+            // Calculate daily, weekly, monthly targets
+            const dailyTarget = totalIncome / totalDays;
+            const weeklyTarget = dailyTarget * 7;
+            const monthlyTarget = dailyTarget * 30;
+            
+            // Calculate costs
+            const dailyCost = totalCost / totalDays;
+            const weeklyCost = dailyCost * 7;
+            const monthlyCost = dailyCost * 30;
+            
+            // Update display
+            document.getElementById('dailyTarget').textContent = `R ${dailyTarget.toFixed(2)}`;
+            document.getElementById('weeklyTarget').textContent = `R ${weeklyTarget.toFixed(2)}`;
+            document.getElementById('monthlyTarget').textContent = `R ${monthlyTarget.toFixed(2)}`;
+            document.getElementById('dailyCost').textContent = `R ${dailyCost.toFixed(2)}`;
+            document.getElementById('weeklyCost').textContent = `R ${weeklyCost.toFixed(2)}`;
+            document.getElementById('monthlyCost').textContent = `R ${monthlyCost.toFixed(2)}`;
+            
+            // Store current project
+            currentProject = {
+                costCenter: document.getElementById('costCenter').value,
+                projectName: document.getElementById('projectName').value,
+                totalIncome: totalIncome,
+                totalCost: totalCost,
+                startDate: document.getElementById('startDate').value,
+                endDate: document.getElementById('endDate').value,
+                durationType: durationType,
+                duration: duration,
+                dailyTarget: dailyTarget,
+                weeklyTarget: weeklyTarget,
+                monthlyTarget: monthlyTarget,
+                dailyCost: dailyCost,
+                weeklyCost: weeklyCost,
+                monthlyCost: monthlyCost
+            };
+            
+            // Initialize charts with projected data
+            initializeCharts();
+        }
+
+        // Initialize charts
+        function initializeCharts() {
+            // Weekly Chart
+            const weeklyCtx = document.getElementById('weeklyChart').getContext('2d');
+            if (weeklyChart) weeklyChart.destroy();
+            
+            weeklyChart = new Chart(weeklyCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    datasets: [{
+                        label: 'Target',
+                        data: Array(7).fill(currentProject.dailyTarget),
+                        borderColor: 'rgb(99, 102, 241)',
+                        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                        tension: 0.4
+                    }, {
+                        label: 'Actual',
+                        data: Array(7).fill(0),
+                        borderColor: 'rgb(34, 197, 94)',
+                        backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+            
+            // Monthly Chart
+            const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
+            if (monthlyChart) monthlyChart.destroy();
+            
+            monthlyChart = new Chart(monthlyCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                    datasets: [{
+                        label: 'Target',
+                        data: Array(4).fill(currentProject.weeklyTarget),
+                        backgroundColor: 'rgba(99, 102, 241, 0.8)'
+                    }, {
+                        label: 'Actual',
+                        data: Array(4).fill(0),
+                        backgroundColor: 'rgba(34, 197, 94, 0.8)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        // Submit daily performance
+        async function submitDailyPerformance() {
+            const dailyIncome = parseFloat(document.getElementById('dailyIncome').value) || 0;
+            const summary = document.getElementById('dailySummary').value;
+            const images = document.getElementById('imageUpload').files;
+            
+            if (!dailyIncome) {
+                alert('Please enter today\'s income');
+                return;
+            }
+            
+            // Show loading
+            document.getElementById('loadingOverlay').style.display = 'flex';
+            
+            // Calculate variance
+            const variance = ((dailyIncome - currentProject.dailyTarget) / currentProject.dailyTarget) * 100;
+            
+            // Process images (convert to base64 or upload to storage)
+            const imageLinks = [];
+            for (let i = 0; i < Math.min(images.length, 5); i++) {
+                const imageLink = await processImage(images[i]);
+                imageLinks.push(imageLink);
+            }
+            
+            // Create performance record
+            const record = {
+                date: moment().format('YYYY-MM-DD'),
+                projectManager: document.getElementById('projectManager').value,
+                projectName: currentProject.projectName,
+                costCenter: currentProject.costCenter,
+                dailyTarget: currentProject.dailyTarget,
+                dailyIncome: dailyIncome,
+                variance: variance.toFixed(2),
+                summary: summary,
+                images: imageLinks.join(', '),
+                timestamp: moment().format('YYYY-MM-DD HH:mm:ss')
+            };
+            
+            performanceData.push(record);
+            
+            // Update variance display
+            document.getElementById('varianceDisplay').classList.remove('hidden');
+            document.getElementById('variancePercentage').textContent = `${variance > 0 ? '+' : ''}${variance.toFixed(2)}%`;
+            document.getElementById('variancePercentage').className = variance >= 0 ? 'text-xl font-bold text-green-600' : 'text-xl font-bold text-red-600';
+            
+            const varianceBar = document.getElementById('varianceBar');
+            varianceBar.style.width = `${Math.min(Math.abs(variance), 100)}%`;
+            varianceBar.className = variance >= 0 ? 'h-2.5 rounded-full bg-green-600' : 'h-2.5 rounded-full bg-red-600';
+            
+            // Update performance cards
+            updatePerformanceCards();
+            
+            // Add to history table
+            addToHistoryTable(record);
+            
+            // Update charts
+            updateCharts();
+            
+            // Send to Google Sheets
+            await sendToGoogleSheets(record);
+            
+            // Clear inputs
+            document.getElementById('dailyIncome').value = '';
+            document.getElementById('dailySummary').value = '';
+            document.getElementById('imageUpload').value = '';
+            
+            // Hide loading
+            document.getElementById('loadingOverlay').style.display = 'none';
+            
+            // Show success message
+            alert('Daily performance submitted successfully!');
+        }
+
+        // Process image (mock function - in production, upload to cloud storage)
+        function processImage(file) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    // In production, upload to cloud storage and return URL
+                    resolve(reader.result.substring(0, 50) + '...'); // Truncated for demo
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // Update performance cards
+        function updatePerformanceCards() {
+            // Calculate today's performance
+            const todayRecords = performanceData.filter(r => r.date === moment().format('YYYY-MM-DD'));
+            const todayTotal = todayRecords.reduce((sum, r) => sum + r.dailyIncome, 0);
+            const todayPerformance = (todayTotal / currentProject.dailyTarget) * 100;
+            
+            document.getElementById('todayPerformance').textContent = `${todayPerformance.toFixed(1)}%`;
+            document.getElementById('todayActual').textContent = `R ${todayTotal.toFixed(2)}`;
+            
+            // Calculate weekly performance
+            const weekStart = moment().startOf('week');
+            const weekRecords = performanceData.filter(r => moment(r.date).isSameOrAfter(weekStart));
+            const weekTotal = weekRecords.reduce((sum, r) => sum + r.dailyIncome, 0);
+            const weekPerformance = (weekTotal / currentProject.weeklyTarget) * 100;
+            
+            document.getElementById('weeklyPerformance').textContent = `${weekPerformance.toFixed(1)}%`;
+            document.getElementById('weeklyActual').textContent = `R ${weekTotal.toFixed(2)}`;
+            
+            // Calculate monthly performance
+            const monthStart = moment().startOf('month');
+            const monthRecords = performanceData.filter(r => moment(r.date).isSameOrAfter(monthStart));
+            const monthTotal = monthRecords.reduce((sum, r) => sum + r.dailyIncome, 0);
+            const monthPerformance = (monthTotal / currentProject.monthlyTarget) * 100;
+            
+            document.getElementById('monthlyPerformance').textContent = `${monthPerformance.toFixed(1)}%`;
+            document.getElementById('monthlyActual').textContent = `R ${monthTotal.toFixed(2)}`;
+        }
+
+        // Add record to history table
+        function addToHistoryTable(record) {
+            const tbody = document.getElementById('historyTable');
+            const row = tbody.insertRow(0);
+            
+            row.innerHTML = `
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${record.date}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${record.projectName}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">R ${record.dailyTarget.toFixed(2)}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">R ${record.dailyIncome.toFixed(2)}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm ${record.variance >= 0 ? 'text-green-600' : 'text-red-600'}">${record.variance}%</td>
+                <td class="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">${record.summary || '-'}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    ${record.images ? '<i class="fa-regular fa-image text-purple-600" title="Images uploaded"></i>' : '-'}
+                </td>
+            `;
+        }
+
+        // Update charts with actual data
+        function updateCharts() {
+            // Update weekly chart
+            const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+            const weekActual = weekDays.map((day, index) => {
+                const date = moment().startOf('week').add(index, 'days').format('YYYY-MM-DD');
+                const dayRecords = performanceData.filter(r => r.date === date);
+                return dayRecords.reduce((sum, r) => sum + r.dailyIncome, 0);
+            });
+            
+            weeklyChart.data.datasets[1].data = weekActual;
+            weeklyChart.update();
+            
+            // Update monthly chart
+            const weekActualTotals = [0, 0, 0, 0];
+            performanceData.forEach(record => {
+                const weekOfMonth = Math.floor(moment(record.date).diff(moment().startOf('month'), 'days') / 7);
+                if (weekOfMonth >= 0 && weekOfMonth < 4) {
+                    weekActualTotals[weekOfMonth] += record.dailyIncome;
+                }
+            });
+            
+            monthlyChart.data.datasets[1].data = weekActualTotals;
+            monthlyChart.update();
+        }
+
+        // Send data to Google Sheets
+        async function sendToGoogleSheets(record) {
+            // This is a mock function - in production, implement actual Google Sheets API call
+            console.log('Sending to Google Sheets:', record);
+            
+            // Example Google Sheets API call structure:
+            /*
+            const params = {
+                spreadsheetId: 'YOUR_SPREADSHEET_ID',
+                range: 'Sheet1!A:G',
+                valueInputOption: 'USER_ENTERED',
+                resource: {
+                    values: [[
+                        record.date,
+                        record.projectManager,
+                        record.projectName,
+                        record.costCenter,
+                        record.dailyTarget,
+                        record.dailyIncome,
+                        record.variance,
+                        record.summary,
+                        record.images,
+                        record.timestamp
+                    ]]
+                }
+            };
+            
+            try {
+                const response = await gapi.client.sheets.spreadsheets.values.append(params);
+                console.log('Data sent to Google Sheets:', response);
+            } catch (error) {
+                console.error('Error sending to Google Sheets:', error);
+            }
+            */
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // initGoogleSheets();
+            
+            // Set default dates
+            document.getElementById('startDate').value = moment().format('YYYY-MM-DD');
+            document.getElementById('endDate').value = moment().add(30, 'days').format('YYYY-MM-DD');
+            
+            // Load sample data for demo
+            loadSampleData();
+        });
+
+        // Load sample data for demonstration
+        function loadSampleData() {
+            // Set sample project
+            document.getElementById('costCenter').value = 'CC-001';
+            document.getElementById('projectName').value = 'Riverside Mall Construction';
+            document.getElementById('totalIncome').value = '1000000';
+            document.getElementById('totalCost').value = '800000';
+            document.getElementById('duration').value = '12';
+            
+            calculateProjections();
+            
+            // Add sample performance records
+            const sampleRecords = [
+                {
+                    date: moment().subtract(1, 'days').format('YYYY-MM-DD'),
+                    dailyIncome: 8500,
+                    summary: 'Completed foundation work ahead of schedule'
+                },
+                {
+                    date: moment().subtract(2, 'days').format('YYYY-MM-DD'),
+                    dailyIncome: 7200,
+                    summary: 'Material delivery delayed, but team productive'
+                },
+                {
+                    date: moment().subtract(3, 'days').format('YYYY-MM-DD'),
+                    dailyIncome: 9100,
+                    summary: 'Excellent progress on structural framework'
+                }
+            ];
+            
+            sampleRecords.forEach(record => {
+                const variance = ((record.dailyIncome - currentProject.dailyTarget) / currentProject.dailyTarget) * 100;
+                
+                const fullRecord = {
+                    ...record,
+                    projectManager: 'Moses',
+                    projectName: currentProject.projectName,
+                    costCenter: currentProject.costCenter,
+                    dailyTarget: currentProject.dailyTarget,
+                    variance: variance.toFixed(2),
+                    images: '',
+                    timestamp: moment().format('YYYY-MM-DD HH:mm:ss')
+                };
+                
+                performanceData.push(fullRecord);
+                addToHistoryTable(fullRecord);
+            });
+            
+            updatePerformanceCards();
+            updateCharts();
+        }
+    </script>
+</body>
+</html>
