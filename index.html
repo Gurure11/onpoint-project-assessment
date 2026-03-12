@@ -424,8 +424,8 @@
     </div>
 
     <script>
-        // IMPORTANT: This will be replaced with your actual Google Apps Script Web App URL after deployment
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw-8Hpgw4GQ9jrqk987ese2kURHHdrEE3ZmC87A0yq7syRq_tMaPMhrnUi7p7Lzsulm3w/exec';
+        // IMPORTANT: Your Google Apps Script Web App URL
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyhvqLzKbTgeF0iHSSPLx3F9N14j0MEOQhL_jWju6Z__fke7_VIhDwxswj4H5lhKory5A/exec';
         
         // Global variables
         let weeklyChart, monthlyChart;
@@ -662,14 +662,14 @@
                                 fileName: file.name,
                                 fileData: base64Data,
                                 mimeType: file.type,
-                                folderId: '1jZfSTARjtEhps_UpUAiZIS_h28l7plIihjCk5vI4eR4' // Your Google Drive folder ID
+                                folderId: '1al8guXtgk-PJWwdNvd2umUXYv4AvwXSM'
                             })
                         });
                         
                         const result = await response.json();
                         
                         if (result.success) {
-                            resolve(result.fileUrl);
+                            resolve(result.data.fileUrl);
                         } else {
                             reject(result.message);
                         }
@@ -751,8 +751,7 @@
                     dailySummary: summary,
                     imageLinks: imageLinks.join(', '),
                     submissionTimestamp: moment().format('YYYY-MM-DD HH:mm:ss'),
-                    userEmail: 'webapp@onpointgroup.com',
-                    serverTimestamp: '' // Will be filled by Apps Script
+                    userEmail: 'webapp@onpointgroup.com'
                 };
                 
                 // Send to Google Sheets via Apps Script
@@ -764,8 +763,6 @@
                     },
                     body: JSON.stringify({
                         action: 'savePerformance',
-                        sheetId: '1jZfSTARjtEhps_UpUAiZIS_h28l7plIihjCk5vI4eR4',
-                        sheetName: 'Manager Assessment',
                         record: record
                     })
                 });
