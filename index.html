@@ -14,8 +14,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
     <!-- jsPDF for PDF generation -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <!-- html2canvas for PDF generation -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         * { font-family: 'Inter', sans-serif; }
@@ -39,9 +37,10 @@
             border-radius: 50%;
             margin-right: 6px;
         }
-        .status-connected { background-color: #10b981; }
+        .status-connected { background-color: #10b981; animation: pulse 2s infinite; }
         .status-disconnected { background-color: #ef4444; }
-        .status-checking { background-color: #f59e0b; }
+        .status-checking { background-color: #f59e0b; animation: pulse 1s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
         .btn-blue {
             background: linear-gradient(135deg, #1e4b8c 0%, #0a2f5a 100%);
             color: white;
@@ -68,10 +67,18 @@
             background: #1e4b8c;
             color: white;
         }
-        .text-blue { color: #1e4b8c; }
-        .bg-blue { background-color: #1e4b8c; }
-        .border-blue { border-color: #1e4b8c; }
-        .focus-ring-blue:focus { ring-color: #1e4b8c; }
+        .success-message {
+            background-color: #10b981;
+            color: white;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            animation: slideIn 0.3s ease;
+        }
+        @keyframes slideIn {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -98,6 +105,9 @@
     </nav>
 
     <div class="container mx-auto px-6 py-8">
+        <!-- Success Message Container -->
+        <div id="successMessage" class="hidden"></div>
+
         <!-- Header with Date and Report Button -->
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
             <h1 class="text-3xl font-bold text-gray-800">Dashboard</h1>
@@ -404,7 +414,7 @@
         <div class="bg-white rounded-lg p-8 max-w-md">
             <div class="flex items-center space-x-3 text-red-600 mb-4">
                 <i class="fa-solid fa-circle-exclamation text-3xl"></i>
-                <h3 class="text-xl font-bold">Connection Error</h3>
+                <h3 class="text-xl font-bold">Error</h3>
             </div>
             <p id="errorMessage" class="text-gray-600 mb-6"></p>
             <button onclick="closeErrorModal()" class="w-full btn-blue">
@@ -415,7 +425,7 @@
 
     <script>
         // IMPORTANT: Replace this with your actual Google Apps Script Web App URL
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby7wKflutIABzK1KbTqefSRnxzhEUZlxoAssAiretPT3spt4KPhDhKc_AX6FD4B2h1vOQ/exec';
+        const SCRIPT_URL = 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE';
         
         // Global variables
         let weeklyChart, monthlyChart;
@@ -440,6 +450,29 @@
         // Set current date
         document.getElementById('currentDate').textContent = moment().format('dddd, MMMM D, YYYY');
 
+        // Show success message
+        function showSuccessMessage(message) {
+            const successDiv = document.getElementById('successMessage');
+            successDiv.className = 'success-message';
+            successDiv.innerHTML = `
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <i class="fa-regular fa-circle-check text-xl"></i>
+                        <span>${message}</span>
+                    </div>
+                    <button onclick="this.parentElement.parentElement.classList.add('hidden')" class="text-white hover:text-gray-200">
+                        <i class="fa-regular fa-circle-xmark"></i>
+                    </button>
+                </div>
+            `;
+            successDiv.classList.remove('hidden');
+            
+            // Auto hide after 5 seconds
+            setTimeout(() => {
+                successDiv.classList.add('hidden');
+            }, 5000);
+        }
+
         // Check connection to Google Apps Script
         async function checkConnection() {
             const statusDot = document.getElementById('connectionStatus');
@@ -449,19 +482,32 @@
             statusText.textContent = 'Checking connection...';
             
             try {
-                const response = await fetch(SCRIPT_URL + '?action=test', {
-                    method: 'GET',
-                    mode: 'no-cors'
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'test'
+                    })
                 });
                 
-                statusDot.className = 'connection-status status-connected';
-                statusText.textContent = 'Connected to Google Sheets';
+                const result = await response.json();
+                
+                if (result.success) {
+                    statusDot.className = 'connection-status status-connected';
+                    statusText.textContent = 'Connected to Google Sheets';
+                    console.log('Connected to:', result);
+                } else {
+                    statusDot.className = 'connection-status status-disconnected';
+                    statusText.textContent = 'Connection failed';
+                }
                 
             } catch (error) {
                 console.error('Connection error:', error);
                 statusDot.className = 'connection-status status-disconnected';
                 statusText.textContent = 'Disconnected - Check Settings';
-                showError('Cannot connect to Google Sheets. Please check your internet connection and script URL.');
             }
         }
 
@@ -603,19 +649,27 @@
                     const base64Data = e.target.result.split(',')[1];
                     
                     try {
-                        const formData = new FormData();
-                        formData.append('action', 'upload');
-                        formData.append('fileName', file.name);
-                        formData.append('fileData', base64Data);
-                        formData.append('mimeType', file.type);
-                        
                         const response = await fetch(SCRIPT_URL, {
                             method: 'POST',
-                            mode: 'no-cors',
-                            body: formData
+                            mode: 'cors',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                action: 'upload',
+                                fileName: file.name,
+                                fileData: base64Data,
+                                mimeType: file.type
+                            })
                         });
                         
-                        resolve(`https://drive.google.com/drive/folders/1al8guXtgk-PJWwdNvd2umUXYv4AvwXSM`);
+                        const result = await response.json();
+                        
+                        if (result.success) {
+                            resolve(result.url);
+                        } else {
+                            reject(result.message);
+                        }
                         
                     } catch (error) {
                         console.error('Upload error:', error);
@@ -632,14 +686,25 @@
             const dailyIncome = parseFloat(document.getElementById('dailyIncome').value) || 0;
             const summary = document.getElementById('dailySummary').value;
             const images = document.getElementById('imageUpload').files;
+            const costCenter = document.getElementById('costCenter').value;
             
             if (!projectManager) {
                 alert('Please select a project manager');
                 return;
             }
             
+            if (!costCenter) {
+                alert('Please select a cost center');
+                return;
+            }
+            
             if (!dailyIncome) {
                 alert('Please enter today\'s income');
+                return;
+            }
+            
+            if (!currentProject.projectName) {
+                alert('Please calculate project projections first');
                 return;
             }
             
@@ -679,52 +744,61 @@
             
             try {
                 // Send to Google Sheets via Apps Script
-                const formData = new FormData();
-                formData.append('action', 'save');
-                formData.append('record', JSON.stringify(record));
-                
                 const response = await fetch(SCRIPT_URL, {
                     method: 'POST',
-                    mode: 'no-cors',
-                    body: formData
+                    mode: 'cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'save',
+                        record: record
+                    })
                 });
                 
-                // Update local data
-                performanceData.push(record);
+                const result = await response.json();
                 
-                // Update variance display
-                document.getElementById('varianceDisplay').classList.remove('hidden');
-                document.getElementById('variancePercentage').textContent = `${variance > 0 ? '+' : ''}${variance.toFixed(2)}%`;
-                document.getElementById('variancePercentage').className = variance >= 0 ? 'text-xl font-bold text-green-600' : 'text-xl font-bold text-red-600';
-                
-                const varianceBar = document.getElementById('varianceBar');
-                varianceBar.style.width = `${Math.min(Math.abs(variance), 100)}%`;
-                varianceBar.className = variance >= 0 ? 'h-2.5 rounded-full bg-green-600' : 'h-2.5 rounded-full bg-red-600';
-                
-                // Update performance cards
-                updatePerformanceCards();
-                
-                // Add to history table
-                addToHistoryTable(record);
-                
-                // Update charts
-                updateCharts();
-                
-                // Clear inputs
-                document.getElementById('dailyIncome').value = '';
-                document.getElementById('dailySummary').value = '';
-                document.getElementById('imageUpload').value = '';
-                
-                // Hide loading
-                document.getElementById('loadingOverlay').style.display = 'none';
-                
-                // Show success message
-                alert('Daily performance submitted successfully!');
+                if (result.success) {
+                    // Update local data
+                    performanceData.push(record);
+                    
+                    // Update variance display
+                    document.getElementById('varianceDisplay').classList.remove('hidden');
+                    document.getElementById('variancePercentage').textContent = `${variance > 0 ? '+' : ''}${variance.toFixed(2)}%`;
+                    document.getElementById('variancePercentage').className = variance >= 0 ? 'text-xl font-bold text-green-600' : 'text-xl font-bold text-red-600';
+                    
+                    const varianceBar = document.getElementById('varianceBar');
+                    varianceBar.style.width = `${Math.min(Math.abs(variance), 100)}%`;
+                    varianceBar.className = variance >= 0 ? 'h-2.5 rounded-full bg-green-600' : 'h-2.5 rounded-full bg-red-600';
+                    
+                    // Update performance cards
+                    updatePerformanceCards();
+                    
+                    // Add to history table
+                    addToHistoryTable(record);
+                    
+                    // Update charts
+                    updateCharts();
+                    
+                    // Clear inputs
+                    document.getElementById('dailyIncome').value = '';
+                    document.getElementById('dailySummary').value = '';
+                    document.getElementById('imageUpload').value = '';
+                    
+                    // Hide loading
+                    document.getElementById('loadingOverlay').style.display = 'none';
+                    
+                    // Show success message
+                    showSuccessMessage('Daily performance submitted successfully to Google Sheets!');
+                    
+                } else {
+                    throw new Error(result.message);
+                }
                 
             } catch (error) {
                 console.error('Error saving to Google Sheets:', error);
                 document.getElementById('loadingOverlay').style.display = 'none';
-                showError('Failed to save data to Google Sheets. Please try again.');
+                showError('Failed to save data to Google Sheets: ' + error.message);
             }
         }
 
@@ -760,6 +834,12 @@
         // Add record to history table
         function addToHistoryTable(record) {
             const tbody = document.getElementById('historyTable');
+            
+            // Check if we already have 10 records, remove the oldest if needed
+            if (tbody.children.length >= 10) {
+                tbody.deleteRow(tbody.children.length - 1);
+            }
+            
             const row = tbody.insertRow(0);
             
             row.innerHTML = `
@@ -882,9 +962,10 @@
                 
                 pdf.text('Date', 22, yPos);
                 pdf.text('Manager', 52, yPos);
-                pdf.text('Target', 92, yPos);
-                pdf.text('Actual', 122, yPos);
-                pdf.text('Variance', 152, yPos);
+                pdf.text('Cost Center', 82, yPos);
+                pdf.text('Target', 122, yPos);
+                pdf.text('Actual', 152, yPos);
+                pdf.text('Var', 182, yPos);
                 
                 yPos += 6;
                 
@@ -900,9 +981,10 @@
                     }
                     
                     pdf.text(entry.date, 22, yPos);
-                    pdf.text(entry.projectManager.substring(0, 10), 52, yPos);
-                    pdf.text(`R ${entry.dailyTarget}`, 92, yPos);
-                    pdf.text(`R ${entry.dailyIncome}`, 122, yPos);
+                    pdf.text(entry.projectManager.substring(0, 8), 52, yPos);
+                    pdf.text((entry.costCenter || '').substring(0, 10), 82, yPos);
+                    pdf.text(`R${entry.dailyTarget}`, 122, yPos);
+                    pdf.text(`R${entry.dailyIncome}`, 152, yPos);
                     
                     const variance = parseFloat(entry.variance);
                     if (variance >= 0) {
@@ -910,7 +992,7 @@
                     } else {
                         pdf.setTextColor(239, 68, 68);
                     }
-                    pdf.text(`${entry.variance}%`, 152, yPos);
+                    pdf.text(`${entry.variance}%`, 182, yPos);
                     
                     pdf.setTextColor(0, 0, 0);
                     yPos += 6;
@@ -926,25 +1008,12 @@
                 pdf.save(`Performance_Report_${moment().format('YYYYMMDD_HHmm')}.pdf`);
                 
                 document.getElementById('loadingOverlay').style.display = 'none';
+                showSuccessMessage('PDF report generated successfully!');
                 
             } catch (error) {
                 console.error('Error generating PDF:', error);
                 document.getElementById('loadingOverlay').style.display = 'none';
-                alert('Error generating PDF report. Please try again.');
-            }
-        }
-
-        // Load historical data from Google Sheets
-        async function loadHistoricalData() {
-            try {
-                const response = await fetch(SCRIPT_URL + '?action=getHistory', {
-                    method: 'GET',
-                    mode: 'no-cors'
-                });
-                loadSampleData();
-            } catch (error) {
-                console.error('Error loading history:', error);
-                loadSampleData();
+                showError('Error generating PDF report. Please try again.');
             }
         }
 
@@ -1013,8 +1082,11 @@
             document.getElementById('startDate').value = moment().format('YYYY-MM-DD');
             document.getElementById('endDate').value = moment().add(30, 'days').format('YYYY-MM-DD');
             
-            // Load historical data
-            loadHistoricalData();
+            // Load sample data
+            loadSampleData();
+            
+            // Check connection every 30 seconds
+            setInterval(checkConnection, 30000);
         });
     </script>
 </body>
