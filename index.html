@@ -3,323 +3,1040 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Onpoint Group - Project Manager Performance Tracker</title>
-    <!-- Font Awesome 6 -->
+    <title>Onpoint Fleet Incident Management</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Moment.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
-    <!-- jsPDF for PDF generation -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        * { font-family: 'Inter', sans-serif; }
-        .gradient-bg { background: linear-gradient(135deg, #1e4b8c 0%, #0a2f5a 100%); }
-        .card-hover { transition: all 0.3s ease; }
-        .card-hover:hover { transform: translateY(-5px); box-shadow: 0 10px 40px rgba(0,0,0,0.1); }
-        .connection-status {
-            display: inline-block;
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            margin-right: 6px;
+        :root {
+            --primary: #1e3a8a;
+            --primary-light: #3b82f6;
+            --secondary: #f59e0b;
+            --success: #10b981;
+            --danger: #ef4444;
+            --dark: #1f2937;
+            --light: #f3f4f6;
+            --white: #ffffff;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
         }
-        .status-connected { background-color: #10b981; animation: pulse 2s infinite; }
-        .status-disconnected { background-color: #ef4444; }
-        .status-checking { background-color: #f59e0b; animation: pulse 1s infinite; }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-        .btn-blue {
-            background: linear-gradient(135deg, #1e4b8c 0%, #0a2f5a 100%);
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: var(--dark);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow-lg);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .logo {
+            width: 60px;
+            height: 60px;
+            background: var(--primary);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             color: white;
-            padding: 0.75rem 1.5rem;
-            border-radius: 0.5rem;
+            font-size: 28px;
+        }
+
+        .title h1 {
+            color: var(--primary);
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .title p {
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--primary);
+        }
+
+        .stat-card.danger::before { background: var(--danger); }
+        .stat-card.warning::before { background: var(--secondary); }
+        .stat-card.success::before { background: var(--success); }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .stat-icon.blue { background: #dbeafe; color: var(--primary); }
+        .stat-icon.orange { background: #fef3c7; color: var(--secondary); }
+        .stat-icon.red { background: #fee2e2; color: var(--danger); }
+        .stat-icon.green { background: #d1fae5; color: var(--success); }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            color: #6b7280;
+            font-size: 14px;
             font-weight: 500;
-            transition: all 0.3s ease;
         }
-        .btn-blue:hover {
-            opacity: 0.9;
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px -5px rgba(30, 75, 140, 0.4);
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 24px;
+            margin-bottom: 24px;
         }
-        .btn-outline-blue {
-            border: 2px solid #1e4b8c;
-            color: #1e4b8c;
-            background: white;
-            padding: 0.75rem 1.5rem;
-            border-radius: 0.5rem;
-            font-weight: 500;
-            transition: all 0.3s ease;
+
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
         }
-        .btn-outline-blue:hover {
-            background: #1e4b8c;
-            color: white;
+
+        .card {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: var(--shadow);
         }
-        .toast {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            padding: 16px 24px;
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid #f3f4f6;
+        }
+
+        .card-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
             border-radius: 8px;
-            color: white;
-            font-weight: 500;
-            z-index: 1000;
-            transform: translateX(400px);
-            transition: transform 0.3s ease;
-            max-width: 350px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
-        .toast.show { transform: translateX(0); }
-        .toast.success { background-color: #10b981; }
-        .toast.error { background-color: #ef4444; }
-        .toast.info { background-color: #3b82f6; }
-        #debugConsole {
-            background: #1a1a1a;
-            color: #00ff00;
-            font-family: monospace;
-            padding: 10px;
-            border-radius: 5px;
-            max-height: 200px;
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1e40af;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(30, 58, 138, 0.3);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 14px;
+        }
+
+        .form-input, .form-select, .form-textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary-light);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .incident-list {
+            max-height: 600px;
             overflow-y: auto;
+        }
+
+        .incident-item {
+            background: #f9fafb;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            border-left: 4px solid var(--primary);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .incident-item:hover {
+            background: #f3f4f6;
+            transform: translateX(5px);
+        }
+
+        .incident-item.high { border-left-color: var(--danger); }
+        .incident-item.medium { border-left-color: var(--secondary); }
+        .incident-item.low { border-left-color: var(--success); }
+
+        .incident-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .incident-id {
+            font-weight: 700;
+            color: var(--primary);
+            font-size: 14px;
+        }
+
+        .badge {
+            padding: 4px 12px;
+            border-radius: 20px;
             font-size: 12px;
-            margin-top: 20px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-high { background: #fee2e2; color: var(--danger); }
+        .badge-medium { background: #fef3c7; color: var(--secondary); }
+        .badge-low { background: #d1fae5; color: var(--success); }
+        .badge-pending { background: #dbeafe; color: var(--primary); }
+
+        .incident-title {
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 4px;
+        }
+
+        .incident-meta {
+            display: flex;
+            gap: 16px;
+            color: #6b7280;
+            font-size: 13px;
+        }
+
+        .incident-meta span {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f4f6;
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .alert {
+            padding: 16px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .alert.active {
+            display: flex;
+        }
+
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6b7280;
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 16px;
+            color: #d1d5db;
+        }
+
+        .filter-bar {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            border: 2px solid #e5e7eb;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .filter-btn.active, .filter-btn:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .manager-select {
+            position: relative;
+        }
+
+        .manager-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--primary-light);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 24px;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            padding: 24px;
+            border-bottom: 2px solid #f3f4f6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--dark);
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #6b7280;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .close-btn:hover {
+            background: #f3f4f6;
+            color: var(--dark);
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        .detail-row {
+            display: flex;
+            margin-bottom: 16px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .detail-label {
+            width: 120px;
+            font-weight: 600;
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .detail-value {
+            flex: 1;
+            color: var(--dark);
+            font-weight: 500;
+        }
+
+        .image-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .image-thumb {
+            width: 100%;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .image-thumb:hover {
+            transform: scale(1.05);
         }
     </style>
 </head>
-<body class="bg-gray-50">
-    <!-- Navigation -->
-    <nav class="gradient-bg text-white shadow-lg">
-        <div class="container mx-auto px-6 py-4">
-            <div class="flex items-center justify-between">
-                <div class="logo-container">
-                    <span class="text-2xl font-bold">Onpoint Group</span>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <div class="logo-section">
+                <div class="logo">
+                    <i class="fas fa-truck"></i>
                 </div>
-                <div class="flex items-center space-x-6">
-                    <div class="flex items-center cursor-pointer" onclick="checkConnection()" title="Click to test connection">
-                        <span id="connectionStatus" class="connection-status status-checking"></span>
-                        <span id="connectionText" class="text-sm opacity-75">Checking connection...</span>
-                    </div>
-                    <span class="text-sm opacity-75">Project Manager Performance Tracker</span>
-                    <div class="h-8 w-8 bg-white rounded-full flex items-center justify-center">
-                        <i class="fa-regular fa-user text-[#1e4b8c]"></i>
-                    </div>
+                <div class="title">
+                    <h1>Onpoint Fleet Management</h1>
+                    <p>Incident Reporting & Tracking System</p>
                 </div>
             </div>
-        </div>
-    </nav>
-
-    <!-- Toast Container -->
-    <div id="toastContainer"></div>
-
-    <div class="container mx-auto px-6 py-8">
-        <!-- Debug Console (Temporary - Remove after fixing) -->
-        <div class="mb-4 p-4 bg-gray-800 text-white rounded-lg">
-            <div class="flex justify-between items-center mb-2">
-                <h3 class="font-bold">Debug Console</h3>
-                <button onclick="clearDebug()" class="text-xs bg-gray-600 px-2 py-1 rounded">Clear</button>
-            </div>
-            <div id="debugConsole" class="text-xs">
-                Ready to connect...
-            </div>
-        </div>
-
-        <!-- Connection Alert -->
-        <div id="connectionAlert" class="hidden mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-            <div class="flex items-center gap-3 text-red-700">
-                <i class="fa-solid fa-triangle-exclamation"></i>
-                <div>
-                    <p class="font-semibold">Connection Error</p>
-                    <p id="connectionErrorMessage" class="text-sm">Unable to connect to Google Sheets.</p>
-                </div>
-                <button onclick="checkConnection()" class="ml-auto px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 text-sm">
-                    Retry
+            <div class="header-actions">
+                <button class="btn btn-primary" onclick="refreshData()">
+                    <i class="fas fa-sync-alt"></i> Refresh Data
                 </button>
             </div>
+        </header>
+
+        <!-- Alerts -->
+        <div id="alertSuccess" class="alert alert-success">
+            <i class="fas fa-check-circle"></i>
+            <span id="successMessage">Operation completed successfully!</span>
+        </div>
+        <div id="alertError" class="alert alert-error">
+            <i class="fas fa-exclamation-circle"></i>
+            <span id="errorMessage">An error occurred!</span>
         </div>
 
-        <!-- Rest of your HTML remains the same (Project Manager Selection, Project Setup, etc.) -->
-        <!-- ... (keep all your existing HTML content here) ... -->
-        
-        <!-- For brevity, I'm showing only the script section, but keep all your HTML structure -->
+        <!-- Statistics -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div>
+                        <div class="stat-value" id="totalIncidents">0</div>
+                        <div class="stat-label">Total Incidents</div>
+                    </div>
+                    <div class="stat-icon blue">
+                        <i class="fas fa-clipboard-list"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="stat-card warning">
+                <div class="stat-header">
+                    <div>
+                        <div class="stat-value" id="pendingIncidents">0</div>
+                        <div class="stat-label">Pending Review</div>
+                    </div>
+                    <div class="stat-icon orange">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="stat-card danger">
+                <div class="stat-header">
+                    <div>
+                        <div class="stat-value" id="highPriority">0</div>
+                        <div class="stat-label">High Priority</div>
+                    </div>
+                    <div class="stat-icon red">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="stat-card success">
+                <div class="stat-header">
+                    <div>
+                        <div class="stat-value" id="resolvedToday">0</div>
+                        <div class="stat-label">Resolved Today</div>
+                    </div>
+                    <div class="stat-icon green">
+                        <i class="fas fa-check"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Incident List -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <i class="fas fa-list"></i>
+                        Recent Incidents
+                    </h2>
+                    <div class="filter-bar">
+                        <button class="filter-btn active" onclick="filterIncidents('all')">All</button>
+                        <button class="filter-btn" onclick="filterIncidents('high')">High</button>
+                        <button class="filter-btn" onclick="filterIncidents('medium')">Medium</button>
+                        <button class="filter-btn" onclick="filterIncidents('low')">Low</button>
+                    </div>
+                </div>
+                
+                <div id="loadingIncidents" class="loading active">
+                    <div class="spinner"></div>
+                    <p>Loading incidents...</p>
+                </div>
+
+                <div id="incidentList" class="incident-list">
+                    <!-- Incidents will be loaded here -->
+                </div>
+
+                <div id="emptyState" class="empty-state" style="display: none;">
+                    <i class="fas fa-inbox"></i>
+                    <h3>No incidents found</h3>
+                    <p>Submit a new incident using the form</p>
+                </div>
+            </div>
+
+            <!-- Submission Form -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <i class="fas fa-plus-circle"></i>
+                        Report New Incident
+                    </h2>
+                </div>
+
+                <form id="incidentForm">
+                    <div class="form-group">
+                        <label class="form-label">Incident Title *</label>
+                        <input type="text" class="form-input" id="incidentTitle" required placeholder="Brief description of incident">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Vehicle ID *</label>
+                        <input type="text" class="form-input" id="vehicleId" required placeholder="e.g., VH-2024-001">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Driver Name *</label>
+                        <input type="text" class="form-input" id="driverName" required placeholder="Driver's full name">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Priority Level *</label>
+                        <select class="form-select" id="priorityLevel" required>
+                            <option value="">Select Priority</option>
+                            <option value="High">High - Immediate Action</option>
+                            <option value="Medium">Medium - Action Required</option>
+                            <option value="Low">Low - Monitor</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Assigned Manager *</label>
+                        <select class="form-select" id="assignedManager" required>
+                            <option value="">Loading managers...</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Incident Date *</label>
+                        <input type="datetime-local" class="form-input" id="incidentDate" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Location</label>
+                        <input type="text" class="form-input" id="location" placeholder="Where did it occur?">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Description *</label>
+                        <textarea class="form-textarea" id="description" required placeholder="Detailed description of what happened..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Photos (URLs from Google Drive)</label>
+                        <input type="text" class="form-input" id="photoUrls" placeholder="Paste Google Drive image URLs, comma separated">
+                        <small style="color: #6b7280; font-size: 12px;">Upload images to your Drive folder and paste sharing links</small>
+                    </div>
+
+                    <button type="submit" class="btn btn-success" style="width: 100%; justify-content: center;">
+                        <i class="fas fa-paper-plane"></i>
+                        Submit Incident Report
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>© 2026 Onpoint Fleet Management System | Connected to Google Sheets: Managers</p>
+        </div>
+    </div>
+
+    <!-- Detail Modal -->
+    <div id="detailModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Incident Details</h3>
+                <button class="close-btn" onclick="closeModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Content loaded dynamically -->
+            </div>
+        </div>
     </div>
 
     <script>
-        // ============================================
-        // CONFIGURATION - UPDATE THESE VALUES
-        // ============================================
-        const SHEET_ID = '18IcEjJHQS6Wmqri4lfEBLc47b3piQ8tOcF3aR5tZh6U';
-        const SHEET_NAME = 'Managers';
-        const DRIVE_FOLDER_ID = '1al8guXtgk-PJWwdNvd2umUXYv4AvwXSM';
+        // Configuration
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzYDX31fJYcp4IeIlmHvtRJEyvN20if8SY3LBCluqesNfMkioY6N4Xn6mW4s5ePONaUuw/exec'; // Replace with your Google Apps Script Web App URL
         
-        // IMPORTANT: REPLACE THIS WITH YOUR ACTUAL DEPLOYED WEB APP URL
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwzq2ufyvByTPa19mEymyQto-tl7NGKwaZtyS04HRWlDzWvhYC3QQR08ctorKhG4H6W/exec; // <-- CHANGE THIS!
-        
-        // ============================================
-        // DEBUGGING FUNCTIONS
-        // ============================================
-        function debugLog(message, data = null) {
-            const console = document.getElementById('debugConsole');
-            const timestamp = new Date().toLocaleTimeString();
-            let logMessage = `[${timestamp}] ${message}`;
-            if (data) {
-                logMessage += `\n${JSON.stringify(data, null, 2)}`;
-            }
-            console.innerHTML += `<div>${logMessage}</div>`;
-            console.scrollTop = console.scrollHeight;
-            console.log(message, data);
-        }
+        let incidents = [];
+        let managers = [];
+        let currentFilter = 'all';
 
-        function clearDebug() {
-            document.getElementById('debugConsole').innerHTML = '';
-        }
-
-        // ============================================
-        // CONNECTION HANDLING WITH DEBUGGING
-        // ============================================
-        
-        async function checkConnection() {
-            const statusDot = document.getElementById('connectionStatus');
-            const statusText = document.getElementById('connectionText');
-            const alertBox = document.getElementById('connectionAlert');
-            const errorMessage = document.getElementById('connectionErrorMessage');
-            
-            statusDot.className = 'connection-status status-checking';
-            statusText.textContent = 'Checking connection...';
-            alertBox.classList.add('hidden');
-            
-            debugLog('Starting connection check...');
-            debugLog('SCRIPT_URL:', SCRIPT_URL);
-            debugLog('SHEET_ID:', SHEET_ID);
-            debugLog('SHEET_NAME:', SHEET_NAME);
-            
-            if (SCRIPT_URL === 'YOUR_DEPLOYED_SCRIPT_URL_HERE') {
-                errorMessage.textContent = 'Please update SCRIPT_URL in the HTML with your deployed Web App URL';
-                statusDot.className = 'connection-status status-disconnected';
-                statusText.textContent = 'Configuration Error';
-                alertBox.classList.remove('hidden');
-                debugLog('ERROR: SCRIPT_URL not configured');
-                return;
-            }
-            
-            try {
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 15000);
-                
-                const requestBody = {
-                    action: 'test',
-                    sheetId: SHEET_ID,
-                    sheetName: SHEET_NAME,
-                    driveFolderId: DRIVE_FOLDER_ID
-                };
-                
-                debugLog('Sending request:', requestBody);
-                
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'cors',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(requestBody),
-                    signal: controller.signal
-                });
-                
-                clearTimeout(timeoutId);
-                
-                debugLog('Response status:', response.status);
-                debugLog('Response headers:', [...response.headers.entries()]);
-                
-                const responseText = await response.text();
-                debugLog('Raw response:', responseText);
-                
-                let result;
-                try {
-                    result = JSON.parse(responseText);
-                } catch (e) {
-                    debugLog('JSON parse error:', e.message);
-                    throw new Error('Invalid JSON response from server. Response was: ' + responseText.substring(0, 100));
-                }
-                
-                if (result.success) {
-                    statusDot.className = 'connection-status status-connected';
-                    statusText.textContent = 'Connected to Google Sheets';
-                    isConnected = true;
-                    debugLog('Connection successful!', result);
-                    showToast('Connected successfully!', 'success');
-                    
-                    // Load history if connected
-                    loadHistoryFromServer();
-                } else {
-                    throw new Error(result.message || 'Connection test failed');
-                }
-                
-            } catch (error) {
-                debugLog('Connection error details:', {
-                    name: error.name,
-                    message: error.message,
-                    stack: error.stack
-                });
-                
-                statusDot.className = 'connection-status status-disconnected';
-                statusText.textContent = 'Disconnected';
-                isConnected = false;
-                
-                let userMessage = error.message;
-                if (error.name === 'AbortError') {
-                    userMessage = 'Request timeout - server not responding';
-                } else if (error.message.includes('Failed to fetch')) {
-                    userMessage = 'CORS error - check Web App deployment permissions';
-                }
-                
-                errorMessage.textContent = userMessage;
-                alertBox.classList.remove('hidden');
-                showToast('Connection failed: ' + userMessage, 'error', 8000);
-            }
-        }
-
-        // ============================================
-        // TEST FUNCTION TO VERIFY SETUP
-        // ============================================
-        
-        async function testDirectAccess() {
-            debugLog('Testing direct access to Web App...');
-            try {
-                const response = await fetch(SCRIPT_URL + '?test=1');
-                const text = await response.text();
-                debugLog('Direct access response:', text);
-            } catch (error) {
-                debugLog('Direct access error:', error.message);
-            }
-        }
-
-        // ============================================
-        // INITIALIZATION
-        // ============================================
-        
+        // Initialize
         document.addEventListener('DOMContentLoaded', function() {
-            debugLog('Page loaded');
-            
-            // Set default dates
-            document.getElementById('startDate').value = moment().format('YYYY-MM-DD');
-            document.getElementById('endDate').value = moment().add(30, 'days').format('YYYY-MM-DD');
-            
-            // Load sample data
-            loadSampleData();
-            
-            // Check connection after a short delay
-            setTimeout(() => {
-                checkConnection();
-                testDirectAccess(); // Test direct access as well
-            }, 2000);
-            
-            // Check connection every 30 seconds
-            setInterval(checkConnection, 30000);
+            loadManagers();
+            loadIncidents();
+            setupEventListeners();
         });
 
-        // Keep all your existing functions (calculateProjections, submitDailyPerformance, etc.)
-        // ... (copy all your other functions here)
-        
+        function setupEventListeners() {
+            document.getElementById('incidentForm').addEventListener('submit', handleSubmit);
+            
+            // Close modal on outside click
+            document.getElementById('detailModal').addEventListener('click', function(e) {
+                if (e.target === this) closeModal();
+            });
+        }
+
+        // Load Managers from Google Sheet
+        function loadManagers() {
+            google.script.run
+                .withSuccessHandler(function(data) {
+                    managers = data;
+                    populateManagerSelect();
+                })
+                .withFailureHandler(function(error) {
+                    showAlert('error', 'Failed to load managers: ' + error.message);
+                    // Fallback managers
+                    managers = [
+                        {name: 'Manager 1', email: 'manager1@onpoint.com'},
+                        {name: 'Manager 2', email: 'manager2@onpoint.com'}
+                    ];
+                    populateManagerSelect();
+                })
+                .getManagers();
+        }
+
+        function populateManagerSelect() {
+            const select = document.getElementById('assignedManager');
+            select.innerHTML = '<option value="">Select Manager</option>';
+            
+            managers.forEach(manager => {
+                const option = document.createElement('option');
+                option.value = manager.name;
+                option.textContent = manager.name + (manager.role ? ` (${manager.role})` : '');
+                select.appendChild(option);
+            });
+        }
+
+        // Load Incidents
+        function loadIncidents() {
+            document.getElementById('loadingIncidents').classList.add('active');
+            document.getElementById('incidentList').innerHTML = '';
+            
+            google.script.run
+                .withSuccessHandler(function(data) {
+                    incidents = data;
+                    renderIncidents();
+                    updateStats();
+                    document.getElementById('loadingIncidents').classList.remove('active');
+                })
+                .withFailureHandler(function(error) {
+                    showAlert('error', 'Failed to load incidents: ' + error.message);
+                    document.getElementById('loadingIncidents').classList.remove('active');
+                    document.getElementById('emptyState').style.display = 'block';
+                })
+                .getIncidents();
+        }
+
+        function renderIncidents() {
+            const container = document.getElementById('incidentList');
+            const emptyState = document.getElementById('emptyState');
+            
+            let filtered = incidents;
+            if (currentFilter !== 'all') {
+                filtered = incidents.filter(inc => inc.priority && inc.priority.toLowerCase() === currentFilter);
+            }
+
+            if (filtered.length === 0) {
+                container.innerHTML = '';
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            emptyState.style.display = 'none';
+            
+            // Sort by date descending
+            filtered.sort((a, b) => new Date(b.timestamp || b.date) - new Date(a.timestamp || a.date));
+
+            container.innerHTML = filtered.map(incident => `
+                <div class="incident-item ${(incident.priority || '').toLowerCase()}" onclick="showDetail('${incident.id}')">
+                    <div class="incident-header">
+                        <span class="incident-id">#${incident.id || 'N/A'}</span>
+                        <span class="badge badge-${(incident.priority || 'low').toLowerCase()}">${incident.priority || 'Low'}</span>
+                    </div>
+                    <div class="incident-title">${incident.title || 'Untitled'}</div>
+                    <div class="incident-meta">
+                        <span><i class="fas fa-car"></i> ${incident.vehicleId || 'N/A'}</span>
+                        <span><i class="fas fa-user"></i> ${incident.driver || 'N/A'}</span>
+                        <span><i class="fas fa-calendar"></i> ${formatDate(incident.date)}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterIncidents(priority) {
+            currentFilter = priority;
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.textContent.toLowerCase() === priority || (priority === 'all' && btn.textContent === 'All')) {
+                    btn.classList.add('active');
+                }
+            });
+            renderIncidents();
+        }
+
+        function updateStats() {
+            document.getElementById('totalIncidents').textContent = incidents.length;
+            document.getElementById('pendingIncidents').textContent = incidents.filter(i => i.status === 'Pending').length;
+            document.getElementById('highPriority').textContent = incidents.filter(i => (i.priority || '').toLowerCase() === 'high').length;
+            
+            const today = new Date().toDateString();
+            document.getElementById('resolvedToday').textContent = incidents.filter(i => {
+                const resolvedDate = i.resolvedDate ? new Date(i.resolvedDate).toDateString() : null;
+                return i.status === 'Resolved' && resolvedDate === today;
+            }).length;
+        }
+
+        // Submit Form
+        function handleSubmit(e) {
+            e.preventDefault();
+            
+            const formData = {
+                title: document.getElementById('incidentTitle').value,
+                vehicleId: document.getElementById('vehicleId').value,
+                driver: document.getElementById('driverName').value,
+                priority: document.getElementById('priorityLevel').value,
+                manager: document.getElementById('assignedManager').value,
+                date: document.getElementById('incidentDate').value,
+                location: document.getElementById('location').value,
+                description: document.getElementById('description').value,
+                photos: document.getElementById('photoUrls').value,
+                status: 'Pending',
+                timestamp: new Date().toISOString()
+            };
+
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+            submitBtn.disabled = true;
+
+            google.script.run
+                .withSuccessHandler(function(result) {
+                    showAlert('success', 'Incident reported successfully! ID: ' + result.id);
+                    document.getElementById('incidentForm').reset();
+                    loadIncidents();
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                })
+                .withFailureHandler(function(error) {
+                    showAlert('error', 'Failed to submit: ' + error.message);
+                    submitBtn.innerHTML = originalText;
+                    submitBtn.disabled = false;
+                })
+                .addIncident(formData);
+        }
+
+        // Show Detail Modal
+        function showDetail(id) {
+            const incident = incidents.find(i => i.id === id);
+            if (!incident) return;
+
+            const modalBody = document.getElementById('modalBody');
+            
+            let photosHtml = '';
+            if (incident.photos) {
+                const photoUrls = incident.photos.split(',').map(url => url.trim()).filter(url => url);
+                if (photoUrls.length > 0) {
+                    photosHtml = `
+                        <div class="detail-row" style="flex-direction: column;">
+                            <div class="detail-label" style="width: 100%; margin-bottom: 8px;">Photos</div>
+                            <div class="image-gallery">
+                                ${photoUrls.map(url => `<img src="${url}" class="image-thumb" onclick="window.open('${url}', '_blank')">`).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+
+            modalBody.innerHTML = `
+                <div class="detail-row">
+                    <div class="detail-label">Incident ID</div>
+                    <div class="detail-value">#${incident.id}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Title</div>
+                    <div class="detail-value">${incident.title}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Priority</div>
+                    <div class="detail-value">
+                        <span class="badge badge-${(incident.priority || 'low').toLowerCase()}">${incident.priority}</span>
+                    </div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Status</div>
+                    <div class="detail-value">
+                        <span class="badge badge-${incident.status === 'Resolved' ? 'low' : 'pending'}">${incident.status}</span>
+                    </div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Vehicle ID</div>
+                    <div class="detail-value">${incident.vehicleId}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Driver</div>
+                    <div class="detail-value">${incident.driver}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Assigned To</div>
+                    <div class="detail-value">${incident.manager}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Date & Time</div>
+                    <div class="detail-value">${formatDate(incident.date)}</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">Location</div>
+                    <div class="detail-value">${incident.location || 'Not specified'}</div>
+                </div>
+                <div class="detail-row" style="flex-direction: column;">
+                    <div class="detail-label" style="width: 100%; margin-bottom: 8px;">Description</div>
+                    <div class="detail-value" style="line-height: 1.6;">${incident.description}</div>
+                </div>
+                ${photosHtml}
+            `;
+            
+            document.getElementById('detailModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('detailModal').classList.remove('active');
+        }
+
+        function refreshData() {
+            loadManagers();
+            loadIncidents();
+            showAlert('success', 'Data refreshed successfully!');
+        }
+
+        function showAlert(type, message) {
+            const alertId = type === 'success' ? 'alertSuccess' : 'alertError';
+            const messageId = type === 'success' ? 'successMessage' : 'errorMessage';
+            
+            document.getElementById(messageId).textContent = message;
+            const alert = document.getElementById(alertId);
+            alert.classList.add('active');
+            
+            setTimeout(() => {
+                alert.classList.remove('active');
+            }, 5000);
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            const date = new Date(dateString);
+            return date.toLocaleString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
     </script>
 </body>
 </html>
