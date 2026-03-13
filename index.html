@@ -2,852 +2,837 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Onpoint Group - Project Manager Performance Tracker</title>
-    <!-- Font Awesome 6 -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Moment.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
-    <!-- jsPDF for PDF generation -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>OnPoint OnTime Fleet - Login</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        * { font-family: 'Inter', sans-serif; }
-        .gradient-bg { background: linear-gradient(135deg, #1e4b8c 0%, #0a2f5a 100%); }
-        .card-hover { transition: all 0.3s ease; }
-        .card-hover:hover { transform: translateY(-5px); box-shadow: 0 10px 40px rgba(0,0,0,0.1); }
-        .logo-container {
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
             display: flex;
             align-items: center;
-            gap: 12px;
+            justify-content: center;
+            padding: 20px;
         }
-        .logo-img {
-            height: 40px;
-            width: auto;
-            object-fit: contain;
-        }
-        .connection-status {
-            display: inline-block;
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            margin-right: 6px;
-        }
-        .status-connected { background-color: #10b981; animation: pulse 2s infinite; }
-        .status-disconnected { background-color: #ef4444; }
-        .status-checking { background-color: #f59e0b; animation: pulse 1s infinite; }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-        .btn-blue {
-            background: linear-gradient(135deg, #1e4b8c 0%, #0a2f5a 100%);
-            color: white;
-            padding: 0.75rem 1.5rem;
-            border-radius: 0.5rem;
-            font-weight: 500;
-            transition: all 0.3s ease;
-        }
-        .btn-blue:hover {
-            opacity: 0.9;
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px -5px rgba(30, 75, 140, 0.4);
-        }
-        .btn-outline-blue {
-            border: 2px solid #1e4b8c;
-            color: #1e4b8c;
+
+        .login-container {
+            max-width: 400px;
+            width: 100%;
             background: white;
-            padding: 0.75rem 1.5rem;
-            border-radius: 0.5rem;
-            font-weight: 500;
-            transition: all 0.3s ease;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            animation: slideIn 0.5s ease-out;
         }
-        .btn-outline-blue:hover {
-            background: #1e4b8c;
-            color: white;
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
         }
-        .btn-logout {
-            background: transparent;
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            border: 1px solid rgba(255,255,255,0.3);
-            padding: 0.5rem 1rem;
-            border-radius: 0.5rem;
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .header img {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 15px;
+        }
+
+        .form-section {
+            padding: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-size: 14px;
             font-weight: 500;
-            transition: all 0.3s ease;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #eef2f6;
+            border-radius: 10px;
+            font-size: 15px;
+            transition: all 0.3s;
+            background: #f8fafc;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-group input[type="password"] {
+            letter-spacing: 3px;
+        }
+
+        .form-group select {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #eef2f6;
+            border-radius: 10px;
+            font-size: 15px;
+            transition: all 0.3s;
+            background: #f8fafc;
+            cursor: pointer;
+        }
+
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .remember-forgot {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .remember-me {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 8px;
         }
-        .btn-logout:hover {
-            background: rgba(255,255,255,0.1);
-            border-color: rgba(255,255,255,0.5);
+
+        .remember-me input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
         }
-        .success-message {
-            background-color: #10b981;
+
+        .remember-me label {
+            color: #555;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .forgot-password {
+            color: #667eea;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .forgot-password:hover {
+            text-decoration: underline;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 1rem;
-            border-radius: 0.5rem;
-            margin-bottom: 1rem;
-            animation: slideIn 0.3s ease;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 20px;
         }
-        @keyframes slideIn {
-            from { transform: translateY(-20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .login-btn:active {
+            transform: translateY(0);
+        }
+
+        .register-link {
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .register-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .register-link a:hover {
+            text-decoration: underline;
+        }
+
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.9);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            background: #f44336;
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 14px;
+            display: none;
+            animation: shake 0.5s ease-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+
+        .success-message {
+            background: #4caf50;
+            color: white;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .password-toggle {
+            position: relative;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #666;
+        }
+
+        .demo-credentials {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            border-left: 4px solid #667eea;
+        }
+
+        .demo-credentials p {
+            margin: 5px 0;
+            color: #555;
+        }
+
+        .demo-credentials strong {
+            color: #667eea;
+        }
+
+        .back-to-login {
+            text-align: center;
+            margin-top: 15px;
+        }
+        
+        .back-to-login a {
+            color: #667eea;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        
+        .back-to-login a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 480px) {
+            .login-container {
+                margin: 10px;
+            }
+            
+            .header h1 {
+                font-size: 24px;
+            }
+            
+            .remember-forgot {
+                flex-direction: column;
+                gap: 10px;
+                align-items: flex-start;
+            }
         }
     </style>
 </head>
-<body class="bg-gray-50">
-    <!-- Navigation -->
-    <nav class="gradient-bg text-white shadow-lg">
-        <div class="container mx-auto px-6 py-4">
-            <div class="flex items-center justify-between">
-                <div class="logo-container">
-                    <img src="logo.png" alt="Onpoint Group Logo" class="logo-img" onerror="this.style.display='none'">
-                    <span class="text-2xl font-bold">Onpoint Group</span>
-                </div>
-                <div class="flex items-center space-x-6">
-                    <div class="flex items-center">
-                        <span id="connectionStatus" class="connection-status status-checking"></span>
-                        <span id="connectionText" class="text-sm opacity-75">Checking connection...</span>
-                    </div>
-                    <span class="text-sm opacity-75">Project Manager Performance Tracker</span>
-                    <!-- Logout Button -->
-                    <a href="index.html" class="btn-logout" title="Logout">
-                        <i class="fa-solid fa-arrow-right-from-bracket"></i>
-                        <span class="hidden md:inline">Logout</span>
-                    </a>
-                    <div class="h-8 w-8 bg-white rounded-full flex items-center justify-center">
-                        <i class="fa-regular fa-user text-[#1e4b8c]"></i>
-                    </div>
-                </div>
-            </div>
+<body>
+    <div class="login-container">
+        <div class="header">
+            <!-- You can replace with your company logo -->
+            <div style="font-size: 50px; margin-bottom: 10px;">🚛</div>
+            <h1>OnPoint Project Management Dashboard</h1>
+            <p>Secure Access Portal</p>
         </div>
-    </nav>
 
-    <div class="container mx-auto px-6 py-8">
-        <!-- Success Message Container -->
-        <div id="successMessage" class="hidden"></div>
+        <div class="form-section">
+            <div class="error-message" id="errorMessage">
+                ❌ Invalid username or password
+            </div>
+            <div class="success-message" id="successMessage">
+                ✅ Login successful! Redirecting...
+            </div>
+            <div class="success-message" id="registerSuccessMessage">
+                ✅ Registration successful! Please login with your credentials.
+            </div>
 
-        <!-- Header with Date and Report Button -->
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
-            <h1 class="text-3xl font-bold text-gray-800">Dashboard</h1>
-            <div class="flex items-center gap-4">
-                <button onclick="testConnection()" class="btn-outline-blue flex items-center gap-2">
-                    <i class="fa-solid fa-rotate"></i>
-                    Test Connection
+            <!-- Demo credentials for testing -->
+            <div class="demo-credentials">
+                <p><strong>🔐 Demo Credentials:</strong></p>
+                <p>Username: <strong>admin@onpoint.co.za</strong> or <strong>driver1</strong></p>
+                <p>Password: <strong>**********</strong></p>
+            </div>
+
+            <!-- Login Form -->
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="username">Username or Email *</label>
+                    <input type="text" id="username" placeholder="Enter your username or email" required autocomplete="username">
+                </div>
+
+                <div class="form-group password-toggle">
+                    <label for="password">Password *</label>
+                    <input type="password" id="password" placeholder="Enter your password" required autocomplete="current-password">
+                    <span class="toggle-password" onclick="togglePassword()">👁️</span>
+                </div>
+
+                <div class="remember-forgot">
+                    <div class="remember-me">
+                        <input type="checkbox" id="rememberMe">
+                        <label for="rememberMe">Remember me</label>
+                    </div>
+                    <a href="#" class="forgot-password" onclick="forgotPassword()">Forgot Password?</a>
+                </div>
+
+                <button type="submit" class="login-btn" id="loginBtn">
+                    🔐 Sign In
                 </button>
-                <button onclick="generatePDFReport()" class="btn-outline-blue flex items-center gap-2">
-                    <i class="fa-regular fa-file-pdf"></i>
-                    Download Report
-                </button>
-                <div class="bg-white px-6 py-3 rounded-lg shadow-sm">
-                    <i class="fa-regular fa-calendar mr-2 text-[#1e4b8c]"></i>
-                    <span class="font-medium" id="currentDate"></span>
-                </div>
-            </div>
-        </div>
 
-        <!-- Project Manager Selection -->
-        <div class="bg-white rounded-xl shadow-sm p-6 mb-8 card-hover">
-            <div class="flex items-center space-x-4 mb-6">
-                <div class="w-12 h-12 gradient-bg rounded-lg flex items-center justify-center">
-                    <i class="fa-regular fa-user text-white text-xl"></i>
+                <div class="register-link">
+                    Don't have an account? <a href="#" onclick="showRegister()">Register here</a>
                 </div>
-                <h2 class="text-xl font-semibold text-gray-800">Select Project Manager</h2>
-            </div>
-            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
-                <select id="projectManager" class="col-span-2 md:col-span-4 lg:col-span-7 p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#1e4b8c] focus:border-transparent">
-                    <option value="">Choose Project Manager...</option>
-                    <option value="Moses">Moses</option>
-                    <option value="Johan">Johan</option>
-                    <option value="Siyanda">Siyanda</option>
-                    <option value="Dave">Dave</option>
-                    <option value="James">James</option>
-                    <option value="Rayman">Rayman</option>
-                    <option value="Timothy">Timothy</option>
-                    <option value="Starnley">Starnley</option>
-                    <option value="Brian">Brian</option>
-                    <option value="EL CM">EL CM</option>
-                    <option value="Govern">Govern</option>
-                    <option value="Elroy">Elroy</option>
-                    <option value="Mesh">Mesh</option>
-                    <option value="Vusi">Vusi</option>
-                    <option value="Tinotenda">Tinotenda</option>
-                    <option value="Sydney">Sydney</option>
-                    <option value="Graham">Graham</option>
-                    <option value="Andrew">Andrew</option>
-                    <option value="Philip">Philip</option>
-                    <option value="Moeti">Moeti</option>
-                </select>
-            </div>
-        </div>
+            </form>
 
-        <!-- Project Setup Form -->
-        <div class="bg-white rounded-xl shadow-sm p-6 mb-8 card-hover">
-            <div class="flex items-center space-x-4 mb-6">
-                <div class="w-12 h-12 gradient-bg rounded-lg flex items-center justify-center">
-                    <i class="fa-regular fa-building text-white text-xl"></i>
-                </div>
-                <h2 class="text-xl font-semibold text-gray-800">Project Setup</h2>
-            </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Cost Center</label>
-                    <select id="costCenter" class="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#1e4b8c] focus:border-transparent">
-                        <option value="">Select Cost Center...</option>
-                        <option value="Onpoint Group HQ">Onpoint Group HQ</option>
-                        <option value="DI Solutions">DI Solutions</option>
-                        <option value="Aqua Telecoms">Aqua Telecoms</option>
-                        <option value="Nkanyezi Projects">Nkanyezi Projects</option>
-                        <option value="Onpoint Ontime Solution">Onpoint Ontime Solution</option>
-                    </select>
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Project Name</label>
-                    <input type="text" id="projectName" class="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#1e4b8c]" placeholder="Enter project name">
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Project Total Income (R)</label>
-                    <input type="number" id="totalIncome" class="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#1e4b8c]" placeholder="0.00">
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Project Total Cost (R)</label>
-                    <input type="number" id="totalCost" class="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#1e4b8c]" placeholder="0.00">
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
-                    <input type="date" id="startDate" class="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#1e4b8c]">
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Expected End Date</label>
-                    <input type="date" id="endDate" class="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#1e4b8c]">
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Duration Type</label>
-                    <select id="durationType" class="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#1e4b8c]">
-                        <option value="days">Days</option>
-                        <option value="months">Months</option>
-                        <option value="years">Years</option>
-                    </select>
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Duration (1-31)</label>
-                    <input type="number" id="duration" min="1" max="31" class="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#1e4b8c]" placeholder="Enter duration">
-                </div>
-                
-                <div class="flex items-end">
-                    <button onclick="calculateProjections()" class="w-full btn-blue">
-                        <i class="fa-solid fa-calculator mr-2"></i>Calculate Projections
+            <!-- Registration Form (initially hidden) -->
+            <div id="registerForm" style="display: none;">
+                <h3 style="color: #333; margin-bottom: 20px; text-align: center;">Create New Account</h3>
+                <form id="registerUserForm">
+                    <div class="form-group">
+                        <label>Full Name *</label>
+                        <input type="text" id="regFullName" placeholder="John Doe" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email Address *</label>
+                        <input type="email" id="regEmail" placeholder="john@onpoint.co.za" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Username *</label>
+                        <input type="text" id="regUsername" placeholder="johndoe" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Password *</label>
+                        <input type="password" id="regPassword" placeholder="Create password" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Confirm Password *</label>
+                        <input type="password" id="regConfirmPassword" placeholder="Confirm password" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Employee Number</label>
+                        <input type="text" id="regEmployeeNumber" placeholder="EMP001">
+                    </div>
+                    <div class="form-group">
+                        <label>Role</label>
+                        <select id="regRole">
+                            <option value="driver">Driver</option>
+                            <option value="manager">Fleet Manager</option>
+                            <option value="admin">Administrator</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="login-btn" style="background: linear-gradient(135deg, #2E7D32 0%, #1B5E20 100%);">
+                        📝 Create Account
                     </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Projected Earnings Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div class="bg-white rounded-xl shadow-sm p-6 card-hover">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <i class="fa-regular fa-sun text-[#1e4b8c] text-xl"></i>
+                    <div class="back-to-login">
+                        <a href="#" onclick="showLogin()">← Back to Login</a>
                     </div>
-                    <span class="text-sm font-medium text-[#1e4b8c] bg-blue-50 px-3 py-1 rounded-full">Daily Target</span>
-                </div>
-                <h3 class="text-2xl font-bold text-gray-800 mb-2" id="dailyTarget">R 0.00</h3>
-                <p class="text-sm text-gray-500">Expected daily income</p>
-                <div class="mt-4 pt-4 border-t border-gray-100">
-                    <p class="text-sm text-gray-600"><span class="font-medium">Daily Cost:</span> <span id="dailyCost">R 0.00</span></p>
-                </div>
-            </div>
-            
-            <div class="bg-white rounded-xl shadow-sm p-6 card-hover">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <i class="fa-regular fa-calendar-week text-[#1e4b8c] text-xl"></i>
-                    </div>
-                    <span class="text-sm font-medium text-[#1e4b8c] bg-blue-50 px-3 py-1 rounded-full">Weekly Target</span>
-                </div>
-                <h3 class="text-2xl font-bold text-gray-800 mb-2" id="weeklyTarget">R 0.00</h3>
-                <p class="text-sm text-gray-500">Expected weekly income</p>
-                <div class="mt-4 pt-4 border-t border-gray-100">
-                    <p class="text-sm text-gray-600"><span class="font-medium">Weekly Cost:</span> <span id="weeklyCost">R 0.00</span></p>
-                </div>
-            </div>
-            
-            <div class="bg-white rounded-xl shadow-sm p-6 card-hover">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <i class="fa-regular fa-calendar text-[#1e4b8c] text-xl"></i>
-                    </div>
-                    <span class="text-sm font-medium text-[#1e4b8c] bg-blue-50 px-3 py-1 rounded-full">Monthly Target</span>
-                </div>
-                <h3 class="text-2xl font-bold text-gray-800 mb-2" id="monthlyTarget">R 0.00</h3>
-                <p class="text-sm text-gray-500">Expected monthly income</p>
-                <div class="mt-4 pt-4 border-t border-gray-100">
-                    <p class="text-sm text-gray-600"><span class="font-medium">Monthly Cost:</span> <span id="monthlyCost">R 0.00</span></p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Daily Performance Input -->
-        <div class="bg-white rounded-xl shadow-sm p-6 mb-8 card-hover">
-            <div class="flex items-center space-x-4 mb-6">
-                <div class="w-12 h-12 gradient-bg rounded-lg flex items-center justify-center">
-                    <i class="fa-regular fa-clock text-white text-xl"></i>
-                </div>
-                <h2 class="text-xl font-semibold text-gray-800">Daily Performance Update</h2>
-            </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Today's Income (R)</label>
-                    <input type="number" id="dailyIncome" class="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#1e4b8c]" placeholder="Enter today's income">
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Daily Summary / Comments</label>
-                    <textarea id="dailySummary" rows="3" class="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#1e4b8c]" placeholder="Provide summary for the day or reasons for not meeting target..."></textarea>
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Upload Images</label>
-                    <input type="file" id="imageUpload" multiple accept="image/*" class="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#1e4b8c]">
-                    <p class="text-xs text-gray-500 mt-1">Max 5 images (will be saved to Google Drive)</p>
-                </div>
-                
-                <div class="flex items-end">
-                    <button onclick="submitDailyPerformance()" class="w-full btn-blue">
-                        <i class="fa-regular fa-paper-plane mr-2"></i>Submit Daily Performance
-                    </button>
-                </div>
-            </div>
-            
-            <!-- Variance Display -->
-            <div id="varianceDisplay" class="mt-6 p-4 bg-gray-50 rounded-lg hidden">
-                <div class="flex items-center justify-between">
-                    <span class="font-medium">Daily Performance Variance:</span>
-                    <span id="variancePercentage" class="text-xl font-bold"></span>
-                </div>
-                <div class="w-full bg-gray-200 rounded-full h-2.5 mt-2">
-                    <div id="varianceBar" class="h-2.5 rounded-full" style="width: 0%"></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Performance Charts -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-            <div class="bg-white rounded-xl shadow-sm p-6 card-hover">
-                <h3 class="text-lg font-semibold text-gray-800 mb-4">Weekly Performance</h3>
-                <canvas id="weeklyChart"></canvas>
-            </div>
-            
-            <div class="bg-white rounded-xl shadow-sm p-6 card-hover">
-                <h3 class="text-lg font-semibold text-gray-800 mb-4">Monthly Performance</h3>
-                <canvas id="monthlyChart"></canvas>
-            </div>
-        </div>
-
-        <!-- Performance Summary Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div class="bg-gradient-to-br from-[#1e4b8c] to-[#0a2f5a] rounded-xl shadow-sm p-6 text-white">
-                <div class="flex items-center justify-between mb-4">
-                    <i class="fa-regular fa-sun text-3xl opacity-75"></i>
-                    <span class="text-sm font-medium bg-white bg-opacity-20 px-3 py-1 rounded-full">Today</span>
-                </div>
-                <h3 class="text-3xl font-bold mb-2" id="todayPerformance">0%</h3>
-                <p class="text-sm opacity-90">of daily target achieved</p>
-                <div class="mt-4 pt-4 border-t border-white border-opacity-20">
-                    <p class="text-sm"><span class="opacity-75">Actual:</span> <span id="todayActual">R 0.00</span></p>
-                </div>
-            </div>
-            
-            <div class="bg-gradient-to-br from-[#1e4b8c] to-[#0a2f5a] rounded-xl shadow-sm p-6 text-white">
-                <div class="flex items-center justify-between mb-4">
-                    <i class="fa-regular fa-calendar-week text-3xl opacity-75"></i>
-                    <span class="text-sm font-medium bg-white bg-opacity-20 px-3 py-1 rounded-full">This Week</span>
-                </div>
-                <h3 class="text-3xl font-bold mb-2" id="weeklyPerformance">0%</h3>
-                <p class="text-sm opacity-90">of weekly target achieved</p>
-                <div class="mt-4 pt-4 border-t border-white border-opacity-20">
-                    <p class="text-sm"><span class="opacity-75">Actual:</span> <span id="weeklyActual">R 0.00</span></p>
-                </div>
-            </div>
-            
-            <div class="bg-gradient-to-br from-[#1e4b8c] to-[#0a2f5a] rounded-xl shadow-sm p-6 text-white">
-                <div class="flex items-center justify-between mb-4">
-                    <i class="fa-regular fa-calendar text-3xl opacity-75"></i>
-                    <span class="text-sm font-medium bg-white bg-opacity-20 px-3 py-1 rounded-full">This Month</span>
-                </div>
-                <h3 class="text-3xl font-bold mb-2" id="monthlyPerformance">0%</h3>
-                <p class="text-sm opacity-90">of monthly target achieved</p>
-                <div class="mt-4 pt-4 border-t border-white border-opacity-20">
-                    <p class="text-sm"><span class="opacity-75">Actual:</span> <span id="monthlyActual">R 0.00</span></p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Historical Records -->
-        <div class="bg-white rounded-xl shadow-sm p-6 card-hover">
-            <div class="flex items-center space-x-4 mb-6">
-                <div class="w-12 h-12 gradient-bg rounded-lg flex items-center justify-center">
-                    <i class="fa-regular fa-clock text-white text-xl"></i>
-                </div>
-                <h2 class="text-xl font-semibold text-gray-800">Performance History</h2>
-            </div>
-            
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead>
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Project Manager</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cost Center</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Project</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Target</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actual</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Variance</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Summary</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Images</th>
-                        </tr>
-                    </thead>
-                    <tbody id="historyTable" class="bg-white divide-y divide-gray-200">
-                        <!-- History rows will be populated here -->
-                    </tbody>
-                </table>
+                </form>
             </div>
         </div>
     </div>
 
     <!-- Loading Overlay -->
-    <div id="loadingOverlay" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-        <div class="bg-white rounded-lg p-8 flex flex-col items-center">
-            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#1e4b8c] mb-4"></div>
-            <p class="text-gray-600">Processing...</p>
-        </div>
-    </div>
-
-    <!-- Error Modal -->
-    <div id="errorModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-        <div class="bg-white rounded-lg p-8 max-w-md">
-            <div class="flex items-center space-x-3 text-red-600 mb-4">
-                <i class="fa-solid fa-circle-exclamation text-3xl"></i>
-                <h3 class="text-xl font-bold">Error</h3>
-            </div>
-            <p id="errorMessage" class="text-gray-600 mb-6"></p>
-            <button onclick="closeErrorModal()" class="w-full btn-blue">
-                Try Again
-            </button>
-        </div>
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+        <div style="color: #333; font-weight: 600;">Processing...</div>
     </div>
 
     <script>
         // ============================================
-        // CONFIGURATION - UPDATE THIS WITH YOUR APPS SCRIPT URL
+        // CONFIGURATION - REPLACE WITH YOUR APPS SCRIPT URL
         // ============================================
         const CONFIG = {
-            SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbwetclqSobtsKWC8X7p9PsplirFvBLmcj4xv7caFIWrKWjjkiTSR7-aRyQj4cqFQyQzOw/exec', // REPLACE THIS
-            SPREADSHEET_ID: '1ToKQ3MDSUZl3T-t-_tMFkH5LXUwlMgrgDFRfBeLqK0o',
-            SHEET_NAME: 'Manager View',
-            DRIVE_FOLDER_ID: '15_6jq4oQ5zNmpokwQhfjStD5AdqHRCYa'
-        };
-
-        // Global variables
-        let weeklyChart, monthlyChart;
-        let performanceData = [];
-        let currentProject = {
-            costCenter: '',
-            projectName: '',
-            totalIncome: 0,
-            totalCost: 0,
-            startDate: '',
-            endDate: '',
-            durationType: 'days',
-            duration: 0,
-            dailyTarget: 0,
-            weeklyTarget: 0,
-            monthlyTarget: 0,
-            dailyCost: 0,
-            weeklyCost: 0,
-            monthlyCost: 0
-        };
-
-        // ============================================
-        // HELPER FUNCTIONS
-        // ============================================
-        
-        function formatCurrency(amount) {
-            return 'R ' + amount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-        }
-
-        function formatNumber(amount) {
-            return amount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-        }
-
-        // Set current date
-        document.getElementById('currentDate').textContent = moment().format('dddd, MMMM D, YYYY');
-
-        // Show success message
-        function showSuccessMessage(message) {
-            const successDiv = document.getElementById('successMessage');
-            successDiv.className = 'success-message';
-            successDiv.innerHTML = `
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                        <i class="fa-regular fa-circle-check text-xl"></i>
-                        <span>${message}</span>
-                    </div>
-                    <button onclick="this.parentElement.parentElement.classList.add('hidden')" class="text-white hover:text-gray-200">
-                        <i class="fa-regular fa-circle-xmark"></i>
-                    </button>
-                </div>
-            `;
-            successDiv.classList.remove('hidden');
-            setTimeout(() => successDiv.classList.add('hidden'), 5000);
-        }
-
-        // Show error modal
-        function showError(message) {
-            document.getElementById('errorMessage').textContent = message;
-            document.getElementById('errorModal').style.display = 'flex';
-        }
-
-        function closeErrorModal() {
-            document.getElementById('errorModal').style.display = 'none';
-        }
-
-        // Test connection
-        async function testConnection() {
-            const statusDot = document.getElementById('connectionStatus');
-            const statusText = document.getElementById('connectionText');
+            // Your Google Apps Script Web App URL (from deployment)
+            GAS_URL: 'https://script.google.com/macros/s/AKfycbxFhlaIFEJGYnzX8r9cEx47X31tiXtn-xGFvUS2z6bjixFj8MK0_ffIlE_1Dqrkyym_Hg/exec',
             
-            statusDot.className = 'connection-status status-checking';
-            statusText.textContent = 'Testing connection...';
+            // Redirect URL after successful login (your fuel app)
+            REDIRECT_URL: 'details.html', // or full URL like 'https://yourdomain.com/details.html'
+            
+            // Session timeout in milliseconds (8 hours)
+            SESSION_TIMEOUT: 8 * 60 * 60 * 1000
+        };
+
+        // Store registered users in localStorage (for demo purposes)
+        // In production, this would be handled by your backend
+        let registeredUsers = [];
+
+        // Load registered users from localStorage on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const stored = localStorage.getItem('onpoint_registered_users');
+            if (stored) {
+                registeredUsers = JSON.parse(stored);
+            }
+            
+            const session = localStorage.getItem('onpoint_session');
+            if (session) {
+                const sessionData = JSON.parse(session);
+                const now = new Date().getTime();
+                
+                // Check if session is still valid
+                if (now - sessionData.timestamp < CONFIG.SESSION_TIMEOUT) {
+                    // Auto-login
+                    window.location.href = CONFIG.REDIRECT_URL;
+                } else {
+                    // Session expired
+                    localStorage.removeItem('onpoint_session');
+                }
+            }
+        });
+
+        // Toggle password visibility
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const toggleIcon = document.querySelector('.toggle-password');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleIcon.textContent = '👁️‍🗨️';
+            } else {
+                passwordInput.type = 'password';
+                toggleIcon.textContent = '👁️';
+            }
+        }
+
+        // Forgot password handler
+        function forgotPassword() {
+            const email = prompt('Enter your email address to reset password:');
+            if (email) {
+                alert('Password reset link has been sent to ' + email);
+                // In production, this would call your Apps Script to send reset email
+            }
+        }
+
+        // Show registration form
+        function showRegister() {
+            document.getElementById('loginForm').style.display = 'none';
+            document.getElementById('registerForm').style.display = 'block';
+            document.getElementById('errorMessage').style.display = 'none';
+            document.getElementById('successMessage').style.display = 'none';
+            document.getElementById('registerSuccessMessage').style.display = 'none';
+        }
+
+        // Show login form
+        function showLogin() {
+            document.getElementById('registerForm').style.display = 'none';
+            document.getElementById('loginForm').style.display = 'block';
+            document.getElementById('errorMessage').style.display = 'none';
+            document.getElementById('successMessage').style.display = 'none';
+            document.getElementById('registerSuccessMessage').style.display = 'none';
+        }
+
+        // Handle login form submission
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+            const rememberMe = document.getElementById('rememberMe').checked;
+            
+            if (!username || !password) {
+                showError('Please enter both username and password');
+                return;
+            }
+            
+            // Show loading
+            document.getElementById('loadingOverlay').style.display = 'flex';
+            document.getElementById('loginBtn').disabled = true;
             
             try {
-                const response = await fetch(CONFIG.SCRIPT_URL, {
+                // Check against registered users first (for demo)
+                const registeredUser = registeredUsers.find(u => 
+                    (u.username === username || u.email === username) && u.password === password
+                );
+                
+                // Demo credentials
+                const isDemoUser = (username === 'admin@onpoint.co.za' && password === 'password123') ||
+                                  (username === 'driver1' && password === 'password123');
+                
+                if (registeredUser || isDemoUser) {
+                    
+                    // Simulate API delay
+                    await new Promise(resolve => setTimeout(resolve, 1500));
+                    
+                    // Determine user info
+                    let userInfo;
+                    if (registeredUser) {
+                        userInfo = {
+                            userId: registeredUser.email,
+                            username: registeredUser.username,
+                            email: registeredUser.email,
+                            fullName: registeredUser.fullName,
+                            role: registeredUser.role
+                        };
+                    } else {
+                        userInfo = {
+                            userId: username,
+                            username: username,
+                            email: username.includes('@') ? username : username + '@onpoint.co.za',
+                            fullName: username === 'admin@onpoint.co.za' ? 'Admin User' : 'Driver User',
+                            role: username === 'admin@onpoint.co.za' ? 'admin' : 'driver'
+                        };
+                    }
+                    
+                    // Create session
+                    const sessionData = {
+                        ...userInfo,
+                        timestamp: new Date().getTime(),
+                        expires: new Date().getTime() + CONFIG.SESSION_TIMEOUT
+                    };
+                    
+                    if (rememberMe) {
+                        localStorage.setItem('onpoint_session', JSON.stringify(sessionData));
+                    } else {
+                        sessionStorage.setItem('onpoint_session', JSON.stringify(sessionData));
+                    }
+                    
+                    // Show success
+                    document.getElementById('successMessage').style.display = 'block';
+                    document.getElementById('errorMessage').style.display = 'none';
+                    
+                    // Redirect to fuel app
+                    setTimeout(() => {
+                        window.location.href = CONFIG.REDIRECT_URL;
+                    }, 1500);
+                    
+                } else {
+                    showError('Invalid username or password');
+                    document.getElementById('loadingOverlay').style.display = 'none';
+                    document.getElementById('loginBtn').disabled = false;
+                }
+                
+                // Production code - uncomment when using with Apps Script
+                /*
+                // Call Google Apps Script for authentication
+                const response = await fetch(CONFIG.GAS_URL, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'test' })
+                    mode: 'cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'login',
+                        username: username,
+                        password: password,
+                        timestamp: new Date().toISOString()
+                    })
                 });
                 
                 const result = await response.json();
                 
-                if (result.success) {
-                    statusDot.className = 'connection-status status-connected';
-                    statusText.textContent = '✅ Connected to Google Sheets';
-                    showSuccessMessage('Connection successful!');
+                if (result.status === 'success') {
+                    // Create session
+                    const sessionData = {
+                        userId: result.userId,
+                        username: result.username,
+                        email: result.email,
+                        fullName: result.fullName,
+                        role: result.role,
+                        timestamp: new Date().getTime(),
+                        expires: new Date().getTime() + CONFIG.SESSION_TIMEOUT
+                    };
+                    
+                    if (rememberMe) {
+                        localStorage.setItem('onpoint_session', JSON.stringify(sessionData));
+                    } else {
+                        sessionStorage.setItem('onpoint_session', JSON.stringify(sessionData));
+                    }
+                    
+                    // Show success
+                    document.getElementById('successMessage').style.display = 'block';
+                    document.getElementById('errorMessage').style.display = 'none';
+                    
+                    // Redirect to fuel app
+                    setTimeout(() => {
+                        window.location.href = CONFIG.REDIRECT_URL;
+                    }, 1500);
+                    
                 } else {
-                    statusDot.className = 'connection-status status-disconnected';
-                    statusText.textContent = '❌ Connection failed';
+                    showError(result.message || 'Invalid username or password');
                 }
+                */
+                
             } catch (error) {
-                statusDot.className = 'connection-status status-disconnected';
-                statusText.textContent = '❌ Cannot connect';
-                showError('Connection test failed: ' + error.message);
+                console.error('Login error:', error);
+                showError('Connection error. Please try again.');
+                document.getElementById('loadingOverlay').style.display = 'none';
+                document.getElementById('loginBtn').disabled = false;
             }
-        }
+        });
 
-        // Calculate project projections
-        function calculateProjections() {
-            const totalIncome = parseFloat(document.getElementById('totalIncome').value) || 0;
-            const totalCost = parseFloat(document.getElementById('totalCost').value) || 0;
-            const durationType = document.getElementById('durationType').value;
-            const duration = parseInt(document.getElementById('duration').value) || 1;
+        // Handle registration form submission
+        document.getElementById('registerUserForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
             
-            let totalDays = duration;
-            if (durationType === 'months') totalDays = duration * 30;
-            else if (durationType === 'years') totalDays = duration * 365;
+            const fullName = document.getElementById('regFullName').value.trim();
+            const email = document.getElementById('regEmail').value.trim();
+            const username = document.getElementById('regUsername').value.trim();
+            const password = document.getElementById('regPassword').value.trim();
+            const confirmPassword = document.getElementById('regConfirmPassword').value.trim();
+            const employeeNumber = document.getElementById('regEmployeeNumber').value.trim();
+            const role = document.getElementById('regRole').value;
             
-            const dailyTarget = totalIncome / totalDays;
-            const weeklyTarget = dailyTarget * 7;
-            const monthlyTarget = dailyTarget * 30;
-            const dailyCost = totalCost / totalDays;
-            const weeklyCost = dailyCost * 7;
-            const monthlyCost = dailyCost * 30;
+            // Validate
+            if (!fullName || !email || !username || !password) {
+                alert('Please fill in all required fields');
+                return;
+            }
             
-            document.getElementById('dailyTarget').textContent = formatCurrency(dailyTarget);
-            document.getElementById('weeklyTarget').textContent = formatCurrency(weeklyTarget);
-            document.getElementById('monthlyTarget').textContent = formatCurrency(monthlyTarget);
-            document.getElementById('dailyCost').textContent = formatCurrency(dailyCost);
-            document.getElementById('weeklyCost').textContent = formatCurrency(weeklyCost);
-            document.getElementById('monthlyCost').textContent = formatCurrency(monthlyCost);
+            if (password !== confirmPassword) {
+                alert('Passwords do not match');
+                return;
+            }
             
-            currentProject = {
-                costCenter: document.getElementById('costCenter').value,
-                projectName: document.getElementById('projectName').value,
-                totalIncome, totalCost, startDate: document.getElementById('startDate').value,
-                endDate: document.getElementById('endDate').value, durationType, duration,
-                dailyTarget, weeklyTarget, monthlyTarget, dailyCost, weeklyCost, monthlyCost
-            };
+            if (password.length < 6) {
+                alert('Password must be at least 6 characters long');
+                return;
+            }
             
-            initializeCharts();
-            showSuccessMessage('Project projections calculated successfully!');
-        }
-
-        // Initialize charts
-        function initializeCharts() {
-            const weeklyCtx = document.getElementById('weeklyChart').getContext('2d');
-            if (weeklyChart) weeklyChart.destroy();
+            // Check if username or email already exists
+            if (registeredUsers.some(u => u.username === username)) {
+                alert('Username already exists. Please choose another one.');
+                return;
+            }
             
-            weeklyChart = new Chart(weeklyCtx, {
-                type: 'line',
-                data: {
-                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-                    datasets: [{
-                        label: 'Target',
-                        data: Array(7).fill(currentProject.dailyTarget),
-                        borderColor: '#1e4b8c',
-                        backgroundColor: 'rgba(30, 75, 140, 0.1)',
-                        tension: 0.4
-                    }, {
-                        label: 'Actual',
-                        data: Array(7).fill(0),
-                        borderColor: '#10b981',
-                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                        tension: 0.4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    scales: { y: { ticks: { callback: v => 'R' + v.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',') } } }
-                }
-            });
+            if (registeredUsers.some(u => u.email === email)) {
+                alert('Email already registered. Please use another email or login.');
+                return;
+            }
             
-            const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
-            if (monthlyChart) monthlyChart.destroy();
-            
-            monthlyChart = new Chart(monthlyCtx, {
-                type: 'bar',
-                data: {
-                    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
-                    datasets: [{
-                        label: 'Target',
-                        data: Array(4).fill(currentProject.weeklyTarget),
-                        backgroundColor: 'rgba(30, 75, 140, 0.8)'
-                    }, {
-                        label: 'Actual',
-                        data: Array(4).fill(0),
-                        backgroundColor: 'rgba(16, 185, 129, 0.8)'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    scales: { y: { ticks: { callback: v => 'R' + v.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',') } } }
-                }
-            });
-        }
-
-        // ============================================
-        // MAIN SUBMIT FUNCTION - POSTS TO GOOGLE SHEET
-        // ============================================
-        async function submitDailyPerformance() {
-            const projectManager = document.getElementById('projectManager').value;
-            const dailyIncome = parseFloat(document.getElementById('dailyIncome').value) || 0;
-            const summary = document.getElementById('dailySummary').value;
-            const costCenter = document.getElementById('costCenter').value;
-            const projectName = document.getElementById('projectName').value;
-            
-            // Validation
-            if (!projectManager) { showError('Please select a project manager'); return; }
-            if (!costCenter) { showError('Please select a cost center'); return; }
-            if (!projectName) { showError('Please enter a project name'); return; }
-            if (!dailyIncome || dailyIncome <= 0) { showError('Please enter a valid daily income amount'); return; }
-            if (!currentProject.projectName) { showError('Please calculate project projections first'); return; }
-            
+            // Show loading
             document.getElementById('loadingOverlay').style.display = 'flex';
             
             try {
-                const variance = ((dailyIncome - currentProject.dailyTarget) / currentProject.dailyTarget) * 100;
+                // Simulate API delay
+                await new Promise(resolve => setTimeout(resolve, 1500));
                 
-                // Prepare data for Google Sheets
-                const dataToSend = {
-                    action: 'save',
-                    projectManager: projectManager,
-                    projectName: currentProject.projectName,
-                    costCenter: currentProject.costCenter,
-                    date: moment().format('YYYY-MM-DD'),
-                    dailyTarget: currentProject.dailyTarget.toFixed(2),
-                    dailyIncome: dailyIncome.toFixed(2),
-                    variance: variance.toFixed(2),
-                    dailySummary: summary,
-                    imageLinks: '',
-                    submissionTimestamp: moment().format('YYYY-MM-DD HH:mm:ss'),
-                    userEmail: 'webapp@onpointgroup.com'
+                // Create new user object
+                const newUser = {
+                    fullName,
+                    email,
+                    username,
+                    password, // In production, this should be hashed
+                    employeeNumber,
+                    role,
+                    registeredAt: new Date().toISOString()
                 };
                 
-                console.log('Sending to Google Sheets:', dataToSend);
+                // Add to registered users array
+                registeredUsers.push(newUser);
                 
-                // Send to Google Apps Script
-                const response = await fetch(CONFIG.SCRIPT_URL, {
+                // Save to localStorage (for demo persistence)
+                localStorage.setItem('onpoint_registered_users', JSON.stringify(registeredUsers));
+                
+                // Hide loading
+                document.getElementById('loadingOverlay').style.display = 'none';
+                
+                // Show success message on login form
+                document.getElementById('registerSuccessMessage').style.display = 'block';
+                
+                // Clear registration form
+                document.getElementById('registerUserForm').reset();
+                
+                // Switch to login form
+                showLogin();
+                
+                // Pre-fill login form with registered username
+                document.getElementById('username').value = username;
+                document.getElementById('password').value = '';
+                
+                // Auto-hide success message after 5 seconds
+                setTimeout(() => {
+                    document.getElementById('registerSuccessMessage').style.display = 'none';
+                }, 5000);
+                
+                // Production code - uncomment when using with Apps Script
+                /*
+                const response = await fetch(CONFIG.GAS_URL, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(dataToSend)
+                    mode: 'cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'register',
+                        fullName: fullName,
+                        email: email,
+                        username: username,
+                        password: password,
+                        employeeNumber: employeeNumber,
+                        role: role,
+                        timestamp: new Date().toISOString()
+                    })
                 });
                 
                 const result = await response.json();
-                console.log('Response:', result);
                 
-                if (result.success) {
-                    // Update UI
-                    performanceData.push(dataToSend);
+                if (result.status === 'success') {
+                    // Hide loading
+                    document.getElementById('loadingOverlay').style.display = 'none';
                     
-                    document.getElementById('varianceDisplay').classList.remove('hidden');
-                    document.getElementById('variancePercentage').textContent = `${variance > 0 ? '+' : ''}${variance.toFixed(2)}%`;
-                    document.getElementById('variancePercentage').className = variance >= 0 ? 'text-xl font-bold text-green-600' : 'text-xl font-bold text-red-600';
+                    // Show success message on login form
+                    document.getElementById('registerSuccessMessage').style.display = 'block';
                     
-                    const varianceBar = document.getElementById('varianceBar');
-                    varianceBar.style.width = `${Math.min(Math.abs(variance), 100)}%`;
-                    varianceBar.className = variance >= 0 ? 'h-2.5 rounded-full bg-green-600' : 'h-2.5 rounded-full bg-red-600';
+                    // Clear registration form
+                    document.getElementById('registerUserForm').reset();
                     
-                    updatePerformanceCards();
-                    addToHistoryTable(dataToSend);
-                    updateCharts();
+                    // Switch to login form
+                    showLogin();
                     
-                    // Clear inputs
-                    document.getElementById('dailyIncome').value = '';
-                    document.getElementById('dailySummary').value = '';
-                    document.getElementById('imageUpload').value = '';
+                    // Pre-fill login form with registered username
+                    document.getElementById('username').value = username;
+                    document.getElementById('password').value = '';
                     
-                    showSuccessMessage('✅ Data successfully posted to Google Sheet!');
+                    // Auto-hide success message after 5 seconds
+                    setTimeout(() => {
+                        document.getElementById('registerSuccessMessage').style.display = 'none';
+                    }, 5000);
                 } else {
-                    throw new Error(result.message || 'Failed to save');
+                    document.getElementById('loadingOverlay').style.display = 'none';
+                    alert(result.message || 'Registration failed');
                 }
+                */
                 
             } catch (error) {
-                console.error('Error:', error);
-                showError('Failed to save: ' + error.message);
-            } finally {
+                console.error('Registration error:', error);
                 document.getElementById('loadingOverlay').style.display = 'none';
+                alert('Connection error. Please try again.');
             }
-        }
-
-        // Update performance cards
-        function updatePerformanceCards() {
-            const todayRecords = performanceData.filter(r => r.date === moment().format('YYYY-MM-DD'));
-            const todayTotal = todayRecords.reduce((sum, r) => sum + parseFloat(r.dailyIncome), 0);
-            const todayPerformance = (todayTotal / currentProject.dailyTarget) * 100;
-            
-            document.getElementById('todayPerformance').textContent = `${isNaN(todayPerformance) ? '0' : todayPerformance.toFixed(1)}%`;
-            document.getElementById('todayActual').textContent = formatCurrency(todayTotal);
-            
-            const weekStart = moment().startOf('week');
-            const weekRecords = performanceData.filter(r => moment(r.date).isSameOrAfter(weekStart));
-            const weekTotal = weekRecords.reduce((sum, r) => sum + parseFloat(r.dailyIncome), 0);
-            const weekPerformance = (weekTotal / currentProject.weeklyTarget) * 100;
-            
-            document.getElementById('weeklyPerformance').textContent = `${isNaN(weekPerformance) ? '0' : weekPerformance.toFixed(1)}%`;
-            document.getElementById('weeklyActual').textContent = formatCurrency(weekTotal);
-            
-            const monthStart = moment().startOf('month');
-            const monthRecords = performanceData.filter(r => moment(r.date).isSameOrAfter(monthStart));
-            const monthTotal = monthRecords.reduce((sum, r) => sum + parseFloat(r.dailyIncome), 0);
-            const monthPerformance = (monthTotal / currentProject.monthlyTarget) * 100;
-            
-            document.getElementById('monthlyPerformance').textContent = `${isNaN(monthPerformance) ? '0' : monthPerformance.toFixed(1)}%`;
-            document.getElementById('monthlyActual').textContent = formatCurrency(monthTotal);
-        }
-
-        // Add to history table
-        function addToHistoryTable(record) {
-            const tbody = document.getElementById('historyTable');
-            const row = tbody.insertRow(0);
-            const varianceClass = parseFloat(record.variance) >= 0 ? 'text-green-600' : 'text-red-600';
-            
-            row.innerHTML = `
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${record.date}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${record.projectManager}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${record.costCenter || '-'}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${record.projectName}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">R ${formatNumber(parseFloat(record.dailyTarget))}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">R ${formatNumber(parseFloat(record.dailyIncome))}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm ${varianceClass}">${record.variance}%</td>
-                <td class="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">${record.dailySummary || '-'}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${record.imageLinks ? '<i class="fa-regular fa-image text-[#1e4b8c]"></i>' : '-'}</td>
-            `;
-            
-            while (tbody.children.length > 20) tbody.deleteRow(tbody.children.length - 1);
-        }
-
-        // Update charts
-        function updateCharts() {
-            const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-            const weekActual = weekDays.map((day, index) => {
-                const date = moment().startOf('week').add(index, 'days').format('YYYY-MM-DD');
-                return performanceData.filter(r => r.date === date).reduce((sum, r) => sum + parseFloat(r.dailyIncome), 0);
-            });
-            
-            if (weeklyChart) {
-                weeklyChart.data.datasets[1].data = weekActual;
-                weeklyChart.update();
-            }
-            
-            const weekActualTotals = [0, 0, 0, 0];
-            performanceData.forEach(record => {
-                const weekOfMonth = Math.floor(moment(record.date).diff(moment().startOf('month'), 'days') / 7);
-                if (weekOfMonth >= 0 && weekOfMonth < 4) weekActualTotals[weekOfMonth] += parseFloat(record.dailyIncome);
-            });
-            
-            if (monthlyChart) {
-                monthlyChart.data.datasets[1].data = weekActualTotals;
-                monthlyChart.update();
-            }
-        }
-
-        // Generate PDF (simplified)
-        async function generatePDFReport() {
-            showSuccessMessage('PDF generation is working!');
-        }
-
-        // Load sample data
-        function loadSampleData() {
-            document.getElementById('costCenter').value = 'Onpoint Group HQ';
-            document.getElementById('projectName').value = 'Riverside Mall Construction';
-            document.getElementById('totalIncome').value = '1000000';
-            document.getElementById('totalCost').value = '800000';
-            document.getElementById('duration').value = '12';
-            calculateProjections();
-            
-            const sampleRecords = [
-                { date: moment().subtract(1, 'days').format('YYYY-MM-DD'), projectManager: 'Moses', dailyIncome: '8500', summary: 'Completed foundation work', costCenter: 'Onpoint Group HQ' },
-                { date: moment().subtract(2, 'days').format('YYYY-MM-DD'), projectManager: 'Moses', dailyIncome: '7200', summary: 'Material delivery delayed', costCenter: 'Onpoint Group HQ' },
-                { date: moment().subtract(3, 'days').format('YYYY-MM-DD'), projectManager: 'Moses', dailyIncome: '9100', summary: 'Excellent progress', costCenter: 'Onpoint Group HQ' }
-            ];
-            
-            sampleRecords.forEach(record => {
-                const variance = ((parseFloat(record.dailyIncome) - currentProject.dailyTarget) / currentProject.dailyTarget) * 100;
-                const fullRecord = {
-                    ...record,
-                    projectName: currentProject.projectName,
-                    dailyTarget: currentProject.dailyTarget.toFixed(2),
-                    variance: variance.toFixed(2),
-                    imageLinks: '',
-                    dailySummary: record.summary,
-                    submissionTimestamp: moment().format('YYYY-MM-DD HH:mm:ss')
-                };
-                performanceData.push(fullRecord);
-                addToHistoryTable(fullRecord);
-            });
-            
-            updatePerformanceCards();
-            updateCharts();
-        }
-
-        // Initialize on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('App starting with config:', CONFIG);
-            testConnection();
-            document.getElementById('startDate').value = moment().format('YYYY-MM-DD');
-            document.getElementById('endDate').value = moment().add(30, 'days').format('YYYY-MM-DD');
-            loadSampleData();
         });
+
+        // Show error message
+        function showError(message) {
+            const errorEl = document.getElementById('errorMessage');
+            errorEl.textContent = '❌ ' + message;
+            errorEl.style.display = 'block';
+            
+            setTimeout(() => {
+                errorEl.style.display = 'none';
+            }, 5000);
+        }
+
+        // Logout function (can be called from other pages)
+        function logout() {
+            localStorage.removeItem('onpoint_session');
+            sessionStorage.removeItem('onpoint_session');
+            window.location.href = 'login.html';
+        }
+
+        // Check authentication on protected pages
+        function checkAuth() {
+            const session = localStorage.getItem('onpoint_session') || sessionStorage.getItem('onpoint_session');
+            
+            if (!session) {
+                window.location.href = 'login.html';
+                return null;
+            }
+            
+            const sessionData = JSON.parse(session);
+            const now = new Date().getTime();
+            
+            if (now - sessionData.timestamp > CONFIG.SESSION_TIMEOUT) {
+                logout();
+                return null;
+            }
+            
+            return sessionData;
+        }
+
+        // Make functions globally available
+        window.togglePassword = togglePassword;
+        window.forgotPassword = forgotPassword;
+        window.showRegister = showRegister;
+        window.showLogin = showLogin;
+        window.logout = logout;
+        window.checkAuth = checkAuth;
     </script>
 </body>
 </html>
