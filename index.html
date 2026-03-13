@@ -20,16 +20,6 @@
         .gradient-bg { background: linear-gradient(135deg, #1e4b8c 0%, #0a2f5a 100%); }
         .card-hover { transition: all 0.3s ease; }
         .card-hover:hover { transform: translateY(-5px); box-shadow: 0 10px 40px rgba(0,0,0,0.1); }
-        .logo-container {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        .logo-img {
-            height: 40px;
-            width: auto;
-            object-fit: contain;
-        }
         .connection-status {
             display: inline-block;
             width: 10px;
@@ -67,18 +57,6 @@
             background: #1e4b8c;
             color: white;
         }
-        .success-message {
-            background-color: #10b981;
-            color: white;
-            padding: 1rem;
-            border-radius: 0.5rem;
-            margin-bottom: 1rem;
-            animation: slideIn 0.3s ease;
-        }
-        @keyframes slideIn {
-            from { transform: translateY(-20px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
         .toast {
             position: fixed;
             bottom: 20px;
@@ -96,6 +74,17 @@
         .toast.success { background-color: #10b981; }
         .toast.error { background-color: #ef4444; }
         .toast.info { background-color: #3b82f6; }
+        #debugConsole {
+            background: #1a1a1a;
+            color: #00ff00;
+            font-family: monospace;
+            padding: 10px;
+            border-radius: 5px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-size: 12px;
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body class="bg-gray-50">
@@ -104,7 +93,6 @@
         <div class="container mx-auto px-6 py-4">
             <div class="flex items-center justify-between">
                 <div class="logo-container">
-                    <img src="logo.png" alt="Onpoint Group Logo" class="logo-img" onerror="this.style.display='none'">
                     <span class="text-2xl font-bold">Onpoint Group</span>
                 </div>
                 <div class="flex items-center space-x-6">
@@ -125,21 +113,14 @@
     <div id="toastContainer"></div>
 
     <div class="container mx-auto px-6 py-8">
-        <!-- Success Message Container -->
-        <div id="successMessage" class="hidden"></div>
-
-        <!-- Header with Date and Report Button -->
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
-            <h1 class="text-3xl font-bold text-gray-800">Dashboard</h1>
-            <div class="flex items-center gap-4">
-                <button onclick="generatePDFReport()" class="btn-outline-blue flex items-center gap-2">
-                    <i class="fa-regular fa-file-pdf"></i>
-                    Download Report
-                </button>
-                <div class="bg-white px-6 py-3 rounded-lg shadow-sm">
-                    <i class="fa-regular fa-calendar mr-2 text-[#1e4b8c]"></i>
-                    <span class="font-medium" id="currentDate"></span>
-                </div>
+        <!-- Debug Console (Temporary - Remove after fixing) -->
+        <div class="mb-4 p-4 bg-gray-800 text-white rounded-lg">
+            <div class="flex justify-between items-center mb-2">
+                <h3 class="font-bold">Debug Console</h3>
+                <button onclick="clearDebug()" class="text-xs bg-gray-600 px-2 py-1 rounded">Clear</button>
+            </div>
+            <div id="debugConsole" class="text-xs">
+                Ready to connect...
             </div>
         </div>
 
@@ -149,7 +130,7 @@
                 <i class="fa-solid fa-triangle-exclamation"></i>
                 <div>
                     <p class="font-semibold">Connection Error</p>
-                    <p class="text-sm">Unable to connect to Google Sheets. Please check your internet connection and try again.</p>
+                    <p id="connectionErrorMessage" class="text-sm">Unable to connect to Google Sheets.</p>
                 </div>
                 <button onclick="checkConnection()" class="ml-auto px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 text-sm">
                     Retry
@@ -157,430 +138,82 @@
             </div>
         </div>
 
-        <!-- Project Manager Selection -->
-        <div class="bg-white rounded-xl shadow-sm p-6 mb-8 card-hover">
-            <div class="flex items-center space-x-4 mb-6">
-                <div class="w-12 h-12 gradient-bg rounded-lg flex items-center justify-center">
-                    <i class="fa-regular fa-user text-white text-xl"></i>
-                </div>
-                <h2 class="text-xl font-semibold text-gray-800">Select Project Manager</h2>
-            </div>
-            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
-                <select id="projectManager" class="col-span-2 md:col-span-4 lg:col-span-7 p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#1e4b8c] focus:border-transparent">
-                    <option value="">Choose Project Manager...</option>
-                    <option value="Moses">Moses</option>
-                    <option value="Johan">Johan</option>
-                    <option value="Siyanda">Siyanda</option>
-                    <option value="Dave">Dave</option>
-                    <option value="James">James</option>
-                    <option value="Rayman">Rayman</option>
-                    <option value="Timothy">Timothy</option>
-                    <option value="Starnley">Starnley</option>
-                    <option value="Brian">Brian</option>
-                    <option value="EL CM">EL CM</option>
-                    <option value="Govern">Govern</option>
-                    <option value="Elroy">Elroy</option>
-                    <option value="Mesh">Mesh</option>
-                    <option value="Vusi">Vusi</option>
-                    <option value="Tinotenda">Tinotenda</option>
-                    <option value="Sydney">Sydney</option>
-                    <option value="Graham">Graham</option>
-                    <option value="Andrew">Andrew</option>
-                    <option value="Philip">Philip</option>
-                    <option value="Moeti">Moeti</option>
-                </select>
-            </div>
-        </div>
-
-        <!-- Project Setup Form -->
-        <div class="bg-white rounded-xl shadow-sm p-6 mb-8 card-hover">
-            <div class="flex items-center space-x-4 mb-6">
-                <div class="w-12 h-12 gradient-bg rounded-lg flex items-center justify-center">
-                    <i class="fa-regular fa-building text-white text-xl"></i>
-                </div>
-                <h2 class="text-xl font-semibold text-gray-800">Project Setup</h2>
-            </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Cost Center</label>
-                    <select id="costCenter" class="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#1e4b8c] focus:border-transparent">
-                        <option value="">Select Cost Center...</option>
-                        <option value="Onpoint Group HQ">Onpoint Group HQ</option>
-                        <option value="DI Solutions">DI Solutions</option>
-                        <option value="Aqua Telecoms">Aqua Telecoms</option>
-                        <option value="Nkanyezi Projects">Nkanyezi Projects</option>
-                        <option value="Onpoint Ontime Solution">Onpoint Ontime Solution</option>
-                    </select>
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Project Name</label>
-                    <input type="text" id="projectName" class="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#1e4b8c]" placeholder="Enter project name">
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Project Total Income (R)</label>
-                    <input type="number" id="totalIncome" class="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#1e4b8c]" placeholder="0.00">
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Project Total Cost (R)</label>
-                    <input type="number" id="totalCost" class="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#1e4b8c]" placeholder="0.00">
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
-                    <input type="date" id="startDate" class="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#1e4b8c]">
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Expected End Date</label>
-                    <input type="date" id="endDate" class="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#1e4b8c]">
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Duration Type</label>
-                    <select id="durationType" class="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#1e4b8c]">
-                        <option value="days">Days</option>
-                        <option value="months">Months</option>
-                        <option value="years">Years</option>
-                    </select>
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Duration (1-31)</label>
-                    <input type="number" id="duration" min="1" max="31" class="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#1e4b8c]" placeholder="Enter duration">
-                </div>
-                
-                <div class="flex items-end">
-                    <button onclick="calculateProjections()" class="w-full btn-blue">
-                        <i class="fa-solid fa-calculator mr-2"></i>Calculate Projections
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Projected Earnings Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div class="bg-white rounded-xl shadow-sm p-6 card-hover">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <i class="fa-regular fa-sun text-[#1e4b8c] text-xl"></i>
-                    </div>
-                    <span class="text-sm font-medium text-[#1e4b8c] bg-blue-50 px-3 py-1 rounded-full">Daily Target</span>
-                </div>
-                <h3 class="text-2xl font-bold text-gray-800 mb-2" id="dailyTarget">R 0</h3>
-                <p class="text-sm text-gray-500">Expected daily income</p>
-                <div class="mt-4 pt-4 border-t border-gray-100">
-                    <p class="text-sm text-gray-600"><span class="font-medium">Daily Cost:</span> <span id="dailyCost">R 0</span></p>
-                </div>
-            </div>
-            
-            <div class="bg-white rounded-xl shadow-sm p-6 card-hover">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <i class="fa-regular fa-calendar-week text-[#1e4b8c] text-xl"></i>
-                    </div>
-                    <span class="text-sm font-medium text-[#1e4b8c] bg-blue-50 px-3 py-1 rounded-full">Weekly Target</span>
-                </div>
-                <h3 class="text-2xl font-bold text-gray-800 mb-2" id="weeklyTarget">R 0</h3>
-                <p class="text-sm text-gray-500">Expected weekly income</p>
-                <div class="mt-4 pt-4 border-t border-gray-100">
-                    <p class="text-sm text-gray-600"><span class="font-medium">Weekly Cost:</span> <span id="weeklyCost">R 0</span></p>
-                </div>
-            </div>
-            
-            <div class="bg-white rounded-xl shadow-sm p-6 card-hover">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <i class="fa-regular fa-calendar text-[#1e4b8c] text-xl"></i>
-                    </div>
-                    <span class="text-sm font-medium text-[#1e4b8c] bg-blue-50 px-3 py-1 rounded-full">Monthly Target</span>
-                </div>
-                <h3 class="text-2xl font-bold text-gray-800 mb-2" id="monthlyTarget">R 0</h3>
-                <p class="text-sm text-gray-500">Expected monthly income</p>
-                <div class="mt-4 pt-4 border-t border-gray-100">
-                    <p class="text-sm text-gray-600"><span class="font-medium">Monthly Cost:</span> <span id="monthlyCost">R 0</span></p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Daily Performance Input -->
-        <div class="bg-white rounded-xl shadow-sm p-6 mb-8 card-hover">
-            <div class="flex items-center space-x-4 mb-6">
-                <div class="w-12 h-12 gradient-bg rounded-lg flex items-center justify-center">
-                    <i class="fa-regular fa-clock text-white text-xl"></i>
-                </div>
-                <h2 class="text-xl font-semibold text-gray-800">Daily Performance Update</h2>
-            </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Today's Income (R)</label>
-                    <input type="number" id="dailyIncome" class="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#1e4b8c]" placeholder="Enter today's income">
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Daily Summary / Comments</label>
-                    <textarea id="dailySummary" rows="3" class="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#1e4b8c]" placeholder="Provide summary for the day or reasons for not meeting target..."></textarea>
-                </div>
-                
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Upload Images</label>
-                    <input type="file" id="imageUpload" multiple accept="image/*" class="w-full p-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#1e4b8c]">
-                    <p class="text-xs text-gray-500 mt-1">Max 5 images (will be saved to Google Drive)</p>
-                </div>
-                
-                <div class="flex items-end">
-                    <button onclick="submitDailyPerformance()" class="w-full btn-blue" id="submitBtn">
-                        <i class="fa-regular fa-paper-plane mr-2"></i>Submit Daily Performance
-                    </button>
-                </div>
-            </div>
-            
-            <!-- Variance Display -->
-            <div id="varianceDisplay" class="mt-6 p-4 bg-gray-50 rounded-lg hidden">
-                <div class="flex items-center justify-between">
-                    <span class="font-medium">Daily Performance Variance:</span>
-                    <span id="variancePercentage" class="text-xl font-bold"></span>
-                </div>
-                <div class="w-full bg-gray-200 rounded-full h-2.5 mt-2">
-                    <div id="varianceBar" class="h-2.5 rounded-full" style="width: 0%"></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Performance Charts -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-            <div class="bg-white rounded-xl shadow-sm p-6 card-hover">
-                <h3 class="text-lg font-semibold text-gray-800 mb-4">Weekly Performance</h3>
-                <canvas id="weeklyChart"></canvas>
-            </div>
-            
-            <div class="bg-white rounded-xl shadow-sm p-6 card-hover">
-                <h3 class="text-lg font-semibold text-gray-800 mb-4">Monthly Performance</h3>
-                <canvas id="monthlyChart"></canvas>
-            </div>
-        </div>
-
-        <!-- Performance Summary Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div class="bg-gradient-to-br from-[#1e4b8c] to-[#0a2f5a] rounded-xl shadow-sm p-6 text-white">
-                <div class="flex items-center justify-between mb-4">
-                    <i class="fa-regular fa-sun text-3xl opacity-75"></i>
-                    <span class="text-sm font-medium bg-white bg-opacity-20 px-3 py-1 rounded-full">Today</span>
-                </div>
-                <h3 class="text-3xl font-bold mb-2" id="todayPerformance">0%</h3>
-                <p class="text-sm opacity-90">of daily target achieved</p>
-                <div class="mt-4 pt-4 border-t border-white border-opacity-20">
-                    <p class="text-sm"><span class="opacity-75">Actual:</span> <span id="todayActual">R 0</span></p>
-                </div>
-            </div>
-            
-            <div class="bg-gradient-to-br from-[#1e4b8c] to-[#0a2f5a] rounded-xl shadow-sm p-6 text-white">
-                <div class="flex items-center justify-between mb-4">
-                    <i class="fa-regular fa-calendar-week text-3xl opacity-75"></i>
-                    <span class="text-sm font-medium bg-white bg-opacity-20 px-3 py-1 rounded-full">This Week</span>
-                </div>
-                <h3 class="text-3xl font-bold mb-2" id="weeklyPerformance">0%</h3>
-                <p class="text-sm opacity-90">of weekly target achieved</p>
-                <div class="mt-4 pt-4 border-t border-white border-opacity-20">
-                    <p class="text-sm"><span class="opacity-75">Actual:</span> <span id="weeklyActual">R 0</span></p>
-                </div>
-            </div>
-            
-            <div class="bg-gradient-to-br from-[#1e4b8c] to-[#0a2f5a] rounded-xl shadow-sm p-6 text-white">
-                <div class="flex items-center justify-between mb-4">
-                    <i class="fa-regular fa-calendar text-3xl opacity-75"></i>
-                    <span class="text-sm font-medium bg-white bg-opacity-20 px-3 py-1 rounded-full">This Month</span>
-                </div>
-                <h3 class="text-3xl font-bold mb-2" id="monthlyPerformance">0%</h3>
-                <p class="text-sm opacity-90">of monthly target achieved</p>
-                <div class="mt-4 pt-4 border-t border-white border-opacity-20">
-                    <p class="text-sm"><span class="opacity-75">Actual:</span> <span id="monthlyActual">R 0</span></p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Historical Records -->
-        <div class="bg-white rounded-xl shadow-sm p-6 card-hover">
-            <div class="flex items-center space-x-4 mb-6">
-                <div class="w-12 h-12 gradient-bg rounded-lg flex items-center justify-center">
-                    <i class="fa-regular fa-clock text-white text-xl"></i>
-                </div>
-                <h2 class="text-xl font-semibold text-gray-800">Performance History</h2>
-                <button onclick="loadHistoryFromServer()" class="ml-auto text-sm text-[#1e4b8c] hover:underline">
-                    <i class="fa-solid fa-rotate-right mr-1"></i>Refresh
-                </button>
-            </div>
-            
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead>
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Project Manager</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cost Center</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Project</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Target</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actual</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Variance</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Summary</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Images</th>
-                        </tr>
-                    </thead>
-                    <tbody id="historyTable" class="bg-white divide-y divide-gray-200">
-                        <!-- History rows will be populated here -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <!-- Loading Overlay -->
-    <div id="loadingOverlay" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-        <div class="bg-white rounded-lg p-8 flex flex-col items-center">
-            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#1e4b8c] mb-4"></div>
-            <p class="text-gray-600">Processing...</p>
-        </div>
-    </div>
-
-    <!-- Error Modal -->
-    <div id="errorModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-        <div class="bg-white rounded-lg p-8 max-w-md">
-            <div class="flex items-center space-x-3 text-red-600 mb-4">
-                <i class="fa-solid fa-circle-exclamation text-3xl"></i>
-                <h3 class="text-xl font-bold">Error</h3>
-            </div>
-            <p id="errorMessage" class="text-gray-600 mb-6"></p>
-            <button onclick="closeErrorModal()" class="w-full btn-blue">
-                Try Again
-            </button>
-        </div>
+        <!-- Rest of your HTML remains the same (Project Manager Selection, Project Setup, etc.) -->
+        <!-- ... (keep all your existing HTML content here) ... -->
+        
+        <!-- For brevity, I'm showing only the script section, but keep all your HTML structure -->
     </div>
 
     <script>
         // ============================================
-        // CONFIGURATION - YOUR GOOGLE SHEET AND DRIVE IDs
+        // CONFIGURATION - UPDATE THESE VALUES
         // ============================================
         const SHEET_ID = '18IcEjJHQS6Wmqri4lfEBLc47b3piQ8tOcF3aR5tZh6U';
         const SHEET_NAME = 'Managers';
         const DRIVE_FOLDER_ID = '1al8guXtgk-PJWwdNvd2umUXYv4AvwXSM';
         
-        // IMPORTANT: Replace with your actual deployed Web App URL after deployment
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwzq2ufyvByTPa19mEymyQto-tl7NGKwaZtyS04HRWlDzWvhYC3QQR08ctorKhG4H6W/exec';
+        // IMPORTANT: REPLACE THIS WITH YOUR ACTUAL DEPLOYED WEB APP URL
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwzq2ufyvByTPa19mEymyQto-tl7NGKwaZtyS04HRWlDzWvhYC3QQR08ctorKhG4H6W/exec; // <-- CHANGE THIS!
         
         // ============================================
-        // GLOBAL VARIABLES
+        // DEBUGGING FUNCTIONS
         // ============================================
-        let weeklyChart, monthlyChart;
-        let performanceData = [];
-        let isConnected = false;
-        let currentProject = {
-            costCenter: '',
-            projectName: '',
-            totalIncome: 0,
-            totalCost: 0,
-            startDate: '',
-            endDate: '',
-            durationType: 'days',
-            duration: 0,
-            dailyTarget: 0,
-            weeklyTarget: 0,
-            monthlyTarget: 0,
-            dailyCost: 0,
-            weeklyCost: 0,
-            monthlyCost: 0
-        };
-
-        // ============================================
-        // UTILITY FUNCTIONS
-        // ============================================
-        
-        // Show toast notification
-        function showToast(message, type = 'info', duration = 3000) {
-            const container = document.getElementById('toastContainer');
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            toast.innerHTML = `
-                <div class="flex items-center gap-2">
-                    <i class="fa-solid ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-circle-exclamation' : 'fa-info-circle'}"></i>
-                    <span>${message}</span>
-                </div>
-            `;
-            container.appendChild(toast);
-            
-            setTimeout(() => toast.classList.add('show'), 100);
-            
-            setTimeout(() => {
-                toast.classList.remove('show');
-                setTimeout(() => toast.remove(), 300);
-            }, duration);
+        function debugLog(message, data = null) {
+            const console = document.getElementById('debugConsole');
+            const timestamp = new Date().toLocaleTimeString();
+            let logMessage = `[${timestamp}] ${message}`;
+            if (data) {
+                logMessage += `\n${JSON.stringify(data, null, 2)}`;
+            }
+            console.innerHTML += `<div>${logMessage}</div>`;
+            console.scrollTop = console.scrollHeight;
+            console.log(message, data);
         }
 
-        // Set current date
-        document.getElementById('currentDate').textContent = moment().format('dddd, MMMM D, YYYY');
-
-        // Show success message
-        function showSuccessMessage(message) {
-            const successDiv = document.getElementById('successMessage');
-            successDiv.className = 'success-message';
-            successDiv.innerHTML = `
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                        <i class="fa-regular fa-circle-check text-xl"></i>
-                        <span>${message}</span>
-                    </div>
-                    <button onclick="this.parentElement.parentElement.classList.add('hidden')" class="text-white hover:text-gray-200">
-                        <i class="fa-regular fa-circle-xmark"></i>
-                    </button>
-                </div>
-            `;
-            successDiv.classList.remove('hidden');
-            
-            setTimeout(() => {
-                successDiv.classList.add('hidden');
-            }, 5000);
-        }
-
-        // Show error modal
-        function showError(message) {
-            document.getElementById('errorMessage').textContent = message;
-            document.getElementById('errorModal').style.display = 'flex';
-        }
-
-        // Close error modal
-        function closeErrorModal() {
-            document.getElementById('errorModal').style.display = 'none';
-        }
-
-        // Show loading
-        function showLoading() {
-            document.getElementById('loadingOverlay').style.display = 'flex';
-        }
-
-        // Hide loading
-        function hideLoading() {
-            document.getElementById('loadingOverlay').style.display = 'none';
+        function clearDebug() {
+            document.getElementById('debugConsole').innerHTML = '';
         }
 
         // ============================================
-        // CONNECTION HANDLING
+        // CONNECTION HANDLING WITH DEBUGGING
         // ============================================
         
         async function checkConnection() {
             const statusDot = document.getElementById('connectionStatus');
             const statusText = document.getElementById('connectionText');
             const alertBox = document.getElementById('connectionAlert');
+            const errorMessage = document.getElementById('connectionErrorMessage');
             
             statusDot.className = 'connection-status status-checking';
             statusText.textContent = 'Checking connection...';
             alertBox.classList.add('hidden');
             
+            debugLog('Starting connection check...');
+            debugLog('SCRIPT_URL:', SCRIPT_URL);
+            debugLog('SHEET_ID:', SHEET_ID);
+            debugLog('SHEET_NAME:', SHEET_NAME);
+            
+            if (SCRIPT_URL === 'YOUR_DEPLOYED_SCRIPT_URL_HERE') {
+                errorMessage.textContent = 'Please update SCRIPT_URL in the HTML with your deployed Web App URL';
+                statusDot.className = 'connection-status status-disconnected';
+                statusText.textContent = 'Configuration Error';
+                alertBox.classList.remove('hidden');
+                debugLog('ERROR: SCRIPT_URL not configured');
+                return;
+            }
+            
             try {
                 const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 10000);
+                const timeoutId = setTimeout(() => controller.abort(), 15000);
+                
+                const requestBody = {
+                    action: 'test',
+                    sheetId: SHEET_ID,
+                    sheetName: SHEET_NAME,
+                    driveFolderId: DRIVE_FOLDER_ID
+                };
+                
+                debugLog('Sending request:', requestBody);
                 
                 const response = await fetch(SCRIPT_URL, {
                     method: 'POST',
@@ -588,28 +221,31 @@
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({
-                        action: 'test',
-                        sheetId: SHEET_ID,
-                        sheetName: SHEET_NAME,
-                        driveFolderId: DRIVE_FOLDER_ID
-                    }),
+                    body: JSON.stringify(requestBody),
                     signal: controller.signal
                 });
                 
                 clearTimeout(timeoutId);
                 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
+                debugLog('Response status:', response.status);
+                debugLog('Response headers:', [...response.headers.entries()]);
                 
-                const result = await response.json();
+                const responseText = await response.text();
+                debugLog('Raw response:', responseText);
+                
+                let result;
+                try {
+                    result = JSON.parse(responseText);
+                } catch (e) {
+                    debugLog('JSON parse error:', e.message);
+                    throw new Error('Invalid JSON response from server. Response was: ' + responseText.substring(0, 100));
+                }
                 
                 if (result.success) {
                     statusDot.className = 'connection-status status-connected';
                     statusText.textContent = 'Connected to Google Sheets';
                     isConnected = true;
-                    console.log('Connected:', result);
+                    debugLog('Connection successful!', result);
                     showToast('Connected successfully!', 'success');
                     
                     // Load history if connected
@@ -619,725 +255,42 @@
                 }
                 
             } catch (error) {
-                console.error('Connection error:', error);
+                debugLog('Connection error details:', {
+                    name: error.name,
+                    message: error.message,
+                    stack: error.stack
+                });
+                
                 statusDot.className = 'connection-status status-disconnected';
-                statusText.textContent = 'Disconnected - Check Settings';
+                statusText.textContent = 'Disconnected';
                 isConnected = false;
+                
+                let userMessage = error.message;
+                if (error.name === 'AbortError') {
+                    userMessage = 'Request timeout - server not responding';
+                } else if (error.message.includes('Failed to fetch')) {
+                    userMessage = 'CORS error - check Web App deployment permissions';
+                }
+                
+                errorMessage.textContent = userMessage;
                 alertBox.classList.remove('hidden');
-                showToast('Connection failed: ' + error.message, 'error', 5000);
+                showToast('Connection failed: ' + userMessage, 'error', 8000);
             }
         }
 
         // ============================================
-        // PROJECT CALCULATIONS
+        // TEST FUNCTION TO VERIFY SETUP
         // ============================================
         
-        function calculateProjections() {
-            const totalIncome = parseFloat(document.getElementById('totalIncome').value) || 0;
-            const totalCost = parseFloat(document.getElementById('totalCost').value) || 0;
-            const durationType = document.getElementById('durationType').value;
-            const duration = parseInt(document.getElementById('duration').value) || 1;
-            
-            if (!totalIncome || !duration) {
-                showError('Please enter valid total income and duration');
-                return;
-            }
-            
-            // Calculate total days based on duration type
-            let totalDays = duration;
-            if (durationType === 'months') {
-                totalDays = duration * 30;
-            } else if (durationType === 'years') {
-                totalDays = duration * 365;
-            }
-            
-            // Calculate daily, weekly, monthly targets
-            const dailyTarget = totalIncome / totalDays;
-            const weeklyTarget = dailyTarget * 7;
-            const monthlyTarget = dailyTarget * 30;
-            
-            // Calculate costs
-            const dailyCost = totalCost / totalDays;
-            const weeklyCost = dailyCost * 7;
-            const monthlyCost = dailyCost * 30;
-            
-            // Update display
-            document.getElementById('dailyTarget').textContent = `R ${dailyTarget.toFixed(2)}`;
-            document.getElementById('weeklyTarget').textContent = `R ${weeklyTarget.toFixed(2)}`;
-            document.getElementById('monthlyTarget').textContent = `R ${monthlyTarget.toFixed(2)}`;
-            document.getElementById('dailyCost').textContent = `R ${dailyCost.toFixed(2)}`;
-            document.getElementById('weeklyCost').textContent = `R ${weeklyCost.toFixed(2)}`;
-            document.getElementById('monthlyCost').textContent = `R ${monthlyCost.toFixed(2)}`;
-            
-            // Store current project
-            currentProject = {
-                costCenter: document.getElementById('costCenter').value,
-                projectName: document.getElementById('projectName').value,
-                totalIncome: totalIncome,
-                totalCost: totalCost,
-                startDate: document.getElementById('startDate').value,
-                endDate: document.getElementById('endDate').value,
-                durationType: durationType,
-                duration: duration,
-                dailyTarget: dailyTarget,
-                weeklyTarget: weeklyTarget,
-                monthlyTarget: monthlyTarget,
-                dailyCost: dailyCost,
-                weeklyCost: weeklyCost,
-                monthlyCost: monthlyCost
-            };
-            
-            // Initialize charts with projected data
-            initializeCharts();
-            
-            showToast('Project projections calculated successfully!', 'success');
-        }
-
-        // ============================================
-        // CHARTS
-        // ============================================
-        
-        function initializeCharts() {
-            // Weekly Chart
-            const weeklyCtx = document.getElementById('weeklyChart').getContext('2d');
-            if (weeklyChart) weeklyChart.destroy();
-            
-            weeklyChart = new Chart(weeklyCtx, {
-                type: 'line',
-                data: {
-                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-                    datasets: [{
-                        label: 'Target',
-                        data: Array(7).fill(currentProject.dailyTarget),
-                        borderColor: '#1e4b8c',
-                        backgroundColor: 'rgba(30, 75, 140, 0.1)',
-                        tension: 0.4
-                    }, {
-                        label: 'Actual',
-                        data: Array(7).fill(0),
-                        borderColor: '#10b981',
-                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                        tension: 0.4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: {
-                            position: 'bottom'
-                        }
-                    }
-                }
-            });
-            
-            // Monthly Chart
-            const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
-            if (monthlyChart) monthlyChart.destroy();
-            
-            monthlyChart = new Chart(monthlyCtx, {
-                type: 'bar',
-                data: {
-                    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
-                    datasets: [{
-                        label: 'Target',
-                        data: Array(4).fill(currentProject.weeklyTarget),
-                        backgroundColor: 'rgba(30, 75, 140, 0.8)'
-                    }, {
-                        label: 'Actual',
-                        data: Array(4).fill(0),
-                        backgroundColor: 'rgba(16, 185, 129, 0.8)'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    plugins: {
-                        legend: {
-                            position: 'bottom'
-                        }
-                    }
-                }
-            });
-        }
-
-        function updateCharts() {
-            // Update weekly chart
-            const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-            const weekActual = weekDays.map((day, index) => {
-                const date = moment().startOf('week').add(index, 'days').format('YYYY-MM-DD');
-                const dayRecords = performanceData.filter(r => r.date === date);
-                return dayRecords.reduce((sum, r) => sum + parseFloat(r.dailyIncome || 0), 0);
-            });
-            
-            if (weeklyChart) {
-                weeklyChart.data.datasets[1].data = weekActual;
-                weeklyChart.update();
-            }
-            
-            // Update monthly chart
-            const weekActualTotals = [0, 0, 0, 0];
-            performanceData.forEach(record => {
-                const weekOfMonth = Math.floor(moment(record.date).diff(moment().startOf('month'), 'days') / 7);
-                if (weekOfMonth >= 0 && weekOfMonth < 4) {
-                    weekActualTotals[weekOfMonth] += parseFloat(record.dailyIncome || 0);
-                }
-            });
-            
-            if (monthlyChart) {
-                monthlyChart.data.datasets[1].data = weekActualTotals;
-                monthlyChart.update();
-            }
-        }
-
-        // ============================================
-        // IMAGE UPLOAD
-        // ============================================
-        
-        async function uploadImageToDrive(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = async function(e) {
-                    const base64Data = e.target.result.split(',')[1];
-                    
-                    try {
-                        const controller = new AbortController();
-                        const timeoutId = setTimeout(() => controller.abort(), 30000);
-                        
-                        const response = await fetch(SCRIPT_URL, {
-                            method: 'POST',
-                            mode: 'cors',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({
-                                action: 'uploadImage',
-                                fileName: file.name,
-                                fileData: base64Data,
-                                mimeType: file.type,
-                                driveFolderId: DRIVE_FOLDER_ID
-                            }),
-                            signal: controller.signal
-                        });
-                        
-                        clearTimeout(timeoutId);
-                        
-                        if (!response.ok) {
-                            throw new Error(`HTTP error! status: ${response.status}`);
-                        }
-                        
-                        const result = await response.json();
-                        
-                        if (result.success) {
-                            resolve(result.data.viewUrl || result.data.fileUrl);
-                        } else {
-                            reject(result.message);
-                        }
-                        
-                    } catch (error) {
-                        console.error('Upload error:', error);
-                        reject(error);
-                    }
-                };
-                reader.onerror = () => reject(new Error('Failed to read file'));
-                reader.readAsDataURL(file);
-            });
-        }
-
-        // ============================================
-        // FORM SUBMISSION
-        // ============================================
-        
-        async function submitDailyPerformance() {
-            if (!isConnected) {
-                showError('Not connected to Google Sheets. Please check your connection first.');
-                return;
-            }
-            
-            const projectManager = document.getElementById('projectManager').value;
-            const dailyIncome = parseFloat(document.getElementById('dailyIncome').value) || 0;
-            const summary = document.getElementById('dailySummary').value;
-            const images = document.getElementById('imageUpload').files;
-            const costCenter = document.getElementById('costCenter').value;
-            const projectName = document.getElementById('projectName').value;
-            
-            // Validation
-            if (!projectManager) {
-                showError('Please select a project manager');
-                return;
-            }
-            
-            if (!costCenter) {
-                showError('Please select a cost center');
-                return;
-            }
-            
-            if (!projectName) {
-                showError('Please enter a project name');
-                return;
-            }
-            
-            if (!dailyIncome || dailyIncome <= 0) {
-                showError('Please enter a valid daily income amount');
-                return;
-            }
-            
-            if (!currentProject.projectName) {
-                showError('Please calculate project projections first');
-                return;
-            }
-            
-            // Disable submit button
-            const submitBtn = document.getElementById('submitBtn');
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i>Submitting...';
-            
-            showLoading();
-            
+        async function testDirectAccess() {
+            debugLog('Testing direct access to Web App...');
             try {
-                // Calculate variance
-                const variance = ((dailyIncome - currentProject.dailyTarget) / currentProject.dailyTarget) * 100;
-                
-                // Upload images to Google Drive
-                const imageLinks = [];
-                if (images.length > 0) {
-                    showToast(`Uploading ${images.length} image(s)...`, 'info');
-                    
-                    for (let i = 0; i < Math.min(images.length, 5); i++) {
-                        try {
-                            const imageLink = await uploadImageToDrive(images[i]);
-                            if (imageLink) {
-                                imageLinks.push(imageLink);
-                            }
-                        } catch (error) {
-                            console.error('Error uploading image:', error);
-                            showToast(`Failed to upload image ${i + 1}: ${error.message}`, 'error');
-                        }
-                    }
-                }
-                
-                // Create performance record
-                const record = {
-                    date: moment().format('YYYY-MM-DD'),
-                    projectManager: projectManager,
-                    projectName: currentProject.projectName,
-                    costCenter: currentProject.costCenter,
-                    dailyTarget: currentProject.dailyTarget.toFixed(2),
-                    dailyIncome: dailyIncome.toFixed(2),
-                    variance: variance.toFixed(2),
-                    dailySummary: summary,
-                    imageLinks: imageLinks.join(', '),
-                    submissionTimestamp: moment().format('YYYY-MM-DD HH:mm:ss'),
-                    userEmail: 'webapp@onpointgroup.com',
-                    sheetId: SHEET_ID,
-                    sheetName: SHEET_NAME
-                };
-                
-                // Send to Google Sheets via Apps Script
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 15000);
-                
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'cors',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        action: 'savePerformance',
-                        record: record,
-                        sheetId: SHEET_ID,
-                        sheetName: SHEET_NAME
-                    }),
-                    signal: controller.signal
-                });
-                
-                clearTimeout(timeoutId);
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                
-                const result = await response.json();
-                
-                if (result.success) {
-                    // Update local data
-                    performanceData.push(record);
-                    
-                    // Update variance display
-                    document.getElementById('varianceDisplay').classList.remove('hidden');
-                    document.getElementById('variancePercentage').textContent = `${variance > 0 ? '+' : ''}${variance.toFixed(2)}%`;
-                    document.getElementById('variancePercentage').className = variance >= 0 ? 'text-xl font-bold text-green-600' : 'text-xl font-bold text-red-600';
-                    
-                    const varianceBar = document.getElementById('varianceBar');
-                    varianceBar.style.width = `${Math.min(Math.abs(variance), 100)}%`;
-                    varianceBar.className = variance >= 0 ? 'h-2.5 rounded-full bg-green-600' : 'h-2.5 rounded-full bg-red-600';
-                    
-                    // Update performance cards
-                    updatePerformanceCards();
-                    
-                    // Add to history table
-                    addToHistoryTable(record);
-                    
-                    // Update charts
-                    updateCharts();
-                    
-                    // Clear inputs
-                    document.getElementById('dailyIncome').value = '';
-                    document.getElementById('dailySummary').value = '';
-                    document.getElementById('imageUpload').value = '';
-                    
-                    showToast('Daily performance submitted successfully!', 'success');
-                    
-                } else {
-                    throw new Error(result.message || 'Failed to save to Google Sheets');
-                }
-                
+                const response = await fetch(SCRIPT_URL + '?test=1');
+                const text = await response.text();
+                debugLog('Direct access response:', text);
             } catch (error) {
-                console.error('Error saving:', error);
-                showError('Failed to save data: ' + error.message);
-            } finally {
-                hideLoading();
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = '<i class="fa-regular fa-paper-plane mr-2"></i>Submit Daily Performance';
+                debugLog('Direct access error:', error.message);
             }
-        }
-
-        // ============================================
-        // PERFORMANCE DISPLAY
-        // ============================================
-        
-        function updatePerformanceCards() {
-            // Calculate today's performance
-            const todayRecords = performanceData.filter(r => r.date === moment().format('YYYY-MM-DD'));
-            const todayTotal = todayRecords.reduce((sum, r) => sum + parseFloat(r.dailyIncome || 0), 0);
-            const todayPerformance = currentProject.dailyTarget > 0 ? (todayTotal / currentProject.dailyTarget) * 100 : 0;
-            
-            document.getElementById('todayPerformance').textContent = `${todayPerformance.toFixed(1)}%`;
-            document.getElementById('todayActual').textContent = `R ${todayTotal.toFixed(2)}`;
-            
-            // Calculate weekly performance
-            const weekStart = moment().startOf('week');
-            const weekRecords = performanceData.filter(r => moment(r.date).isSameOrAfter(weekStart));
-            const weekTotal = weekRecords.reduce((sum, r) => sum + parseFloat(r.dailyIncome || 0), 0);
-            const weekPerformance = currentProject.weeklyTarget > 0 ? (weekTotal / currentProject.weeklyTarget) * 100 : 0;
-            
-            document.getElementById('weeklyPerformance').textContent = `${weekPerformance.toFixed(1)}%`;
-            document.getElementById('weeklyActual').textContent = `R ${weekTotal.toFixed(2)}`;
-            
-            // Calculate monthly performance
-            const monthStart = moment().startOf('month');
-            const monthRecords = performanceData.filter(r => moment(r.date).isSameOrAfter(monthStart));
-            const monthTotal = monthRecords.reduce((sum, r) => sum + parseFloat(r.dailyIncome || 0), 0);
-            const monthPerformance = currentProject.monthlyTarget > 0 ? (monthTotal / currentProject.monthlyTarget) * 100 : 0;
-            
-            document.getElementById('monthlyPerformance').textContent = `${monthPerformance.toFixed(1)}%`;
-            document.getElementById('monthlyActual').textContent = `R ${monthTotal.toFixed(2)}`;
-        }
-
-        function addToHistoryTable(record) {
-            const tbody = document.getElementById('historyTable');
-            
-            // Create new row
-            const row = tbody.insertRow(0);
-            
-            // Format variance class
-            const varianceValue = parseFloat(record.variance || 0);
-            const varianceClass = varianceValue >= 0 ? 'text-green-600' : 'text-red-600';
-            const varianceSign = varianceValue > 0 ? '+' : '';
-            
-            row.innerHTML = `
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${record.date}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${record.projectManager}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${record.costCenter || '-'}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${record.projectName}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">R ${parseFloat(record.dailyTarget || 0).toFixed(2)}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">R ${parseFloat(record.dailyIncome || 0).toFixed(2)}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm ${varianceClass} font-semibold">${varianceSign}${record.variance}%</td>
-                <td class="px-6 py-4 text-sm text-gray-900 max-w-xs truncate" title="${record.dailySummary || ''}">${record.dailySummary || '-'}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    ${record.imageLinks ? `<a href="${record.imageLinks.split(',')[0]}" target="_blank" class="text-[#1e4b8c] hover:underline"><i class="fa-regular fa-image"></i> View</a>` : '-'}
-                </td>
-            `;
-            
-            // Keep only last 20 records in the table
-            while (tbody.children.length > 20) {
-                tbody.deleteRow(tbody.children.length - 1);
-            }
-        }
-
-        // ============================================
-        // LOAD HISTORY FROM SERVER
-        // ============================================
-        
-        async function loadHistoryFromServer() {
-            if (!isConnected) {
-                showToast('Not connected. Please check connection first.', 'error');
-                return;
-            }
-            
-            showToast('Loading history...', 'info');
-            
-            try {
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 10000);
-                
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'cors',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        action: 'getHistory',
-                        sheetId: SHEET_ID,
-                        sheetName: SHEET_NAME
-                    }),
-                    signal: controller.signal
-                });
-                
-                clearTimeout(timeoutId);
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                
-                const result = await response.json();
-                
-                if (result.success && result.data && result.data.records) {
-                    // Clear existing table
-                    const tbody = document.getElementById('historyTable');
-                    tbody.innerHTML = '';
-                    
-                    // Clear performance data array
-                    performanceData = [];
-                    
-                    // Add records to table
-                    result.data.records.reverse().forEach(record => {
-                        // Convert array to object if needed
-                        const recordObj = Array.isArray(record) ? {
-                            date: record[0],
-                            projectManager: record[1],
-                            projectName: record[2],
-                            costCenter: record[3],
-                            dailyTarget: record[4],
-                            dailyIncome: record[5],
-                            variance: record[6],
-                            dailySummary: record[7],
-                            imageLinks: record[8]
-                        } : record;
-                        
-                        addToHistoryTable(recordObj);
-                        performanceData.push(recordObj);
-                    });
-                    
-                    updatePerformanceCards();
-                    updateCharts();
-                    
-                    showToast(`Loaded ${result.data.records.length} records`, 'success');
-                } else {
-                    showToast('No history data available', 'info');
-                }
-                
-            } catch (error) {
-                console.error('Error loading history:', error);
-                showToast('Failed to load history: ' + error.message, 'error');
-            }
-        }
-
-        // ============================================
-        // PDF GENERATION
-        // ============================================
-        
-        async function generatePDFReport() {
-            try {
-                showLoading();
-                
-                const { jsPDF } = window.jspdf;
-                const pdf = new jsPDF('p', 'mm', 'a4');
-                
-                // Add title
-                pdf.setFontSize(20);
-                pdf.setTextColor(30, 75, 140);
-                pdf.text('Onpoint Group - Performance Report', 20, 20);
-                
-                // Add date
-                pdf.setFontSize(12);
-                pdf.setTextColor(100, 100, 100);
-                pdf.text(`Generated: ${moment().format('YYYY-MM-DD HH:mm')}`, 20, 30);
-                
-                // Add project manager info
-                const projectManager = document.getElementById('projectManager').value || 'Not Selected';
-                const costCenter = document.getElementById('costCenter').value || 'Not Selected';
-                const projectName = document.getElementById('projectName').value || 'Not Selected';
-                
-                pdf.setFontSize(10);
-                pdf.setTextColor(0, 0, 0);
-                pdf.text(`Project Manager: ${projectManager}`, 20, 40);
-                pdf.text(`Cost Center: ${costCenter}`, 20, 45);
-                pdf.text(`Project: ${projectName}`, 20, 50);
-                
-                // Add performance summary
-                pdf.setFontSize(14);
-                pdf.setTextColor(30, 75, 140);
-                pdf.text('Performance Summary', 20, 60);
-                
-                pdf.setFontSize(10);
-                pdf.setTextColor(0, 0, 0);
-                pdf.text(`Daily Target: R ${currentProject.dailyTarget.toFixed(2)}`, 20, 68);
-                pdf.text(`Weekly Target: R ${currentProject.weeklyTarget.toFixed(2)}`, 20, 74);
-                pdf.text(`Monthly Target: R ${currentProject.monthlyTarget.toFixed(2)}`, 20, 80);
-                
-                // Add current performance
-                const todayActual = document.getElementById('todayActual').textContent;
-                const weeklyActual = document.getElementById('weeklyActual').textContent;
-                const monthlyActual = document.getElementById('monthlyActual').textContent;
-                
-                pdf.text(`Today's Actual: ${todayActual}`, 100, 68);
-                pdf.text(`Weekly Actual: ${weeklyActual}`, 100, 74);
-                pdf.text(`Monthly Actual: ${monthlyActual}`, 100, 80);
-                
-                // Add variance
-                const todayPerformance = document.getElementById('todayPerformance').textContent;
-                const weeklyPerformance = document.getElementById('weeklyPerformance').textContent;
-                const monthlyPerformance = document.getElementById('monthlyPerformance').textContent;
-                
-                pdf.setTextColor(30, 75, 140);
-                pdf.text(`Today: ${todayPerformance}`, 160, 68);
-                pdf.text(`Week: ${weeklyPerformance}`, 160, 74);
-                pdf.text(`Month: ${monthlyPerformance}`, 160, 80);
-                
-                // Add recent history
-                pdf.setTextColor(30, 75, 140);
-                pdf.setFontSize(14);
-                pdf.text('Recent Performance History', 20, 95);
-                
-                // Create table of recent entries
-                const recentEntries = performanceData.slice(0, 10);
-                
-                pdf.setFontSize(8);
-                pdf.setTextColor(0, 0, 0);
-                
-                let yPos = 105;
-                pdf.setFillColor(240, 240, 240);
-                pdf.rect(20, yPos - 4, 170, 6, 'F');
-                
-                pdf.text('Date', 22, yPos);
-                pdf.text('Manager', 52, yPos);
-                pdf.text('Cost Center', 82, yPos);
-                pdf.text('Target', 122, yPos);
-                pdf.text('Actual', 152, yPos);
-                pdf.text('Var', 182, yPos);
-                
-                yPos += 6;
-                
-                recentEntries.forEach((entry, index) => {
-                    if (yPos > 270) {
-                        pdf.addPage();
-                        yPos = 20;
-                    }
-                    
-                    if (index % 2 === 0) {
-                        pdf.setFillColor(250, 250, 250);
-                        pdf.rect(20, yPos - 4, 170, 6, 'F');
-                    }
-                    
-                    pdf.text(entry.date || '', 22, yPos);
-                    pdf.text((entry.projectManager || '').substring(0, 8), 52, yPos);
-                    pdf.text((entry.costCenter || '').substring(0, 10), 82, yPos);
-                    pdf.text(`R${entry.dailyTarget || '0'}`, 122, yPos);
-                    pdf.text(`R${entry.dailyIncome || '0'}`, 152, yPos);
-                    
-                    const variance = parseFloat(entry.variance || 0);
-                    if (variance >= 0) {
-                        pdf.setTextColor(16, 185, 129);
-                    } else {
-                        pdf.setTextColor(239, 68, 68);
-                    }
-                    pdf.text(`${entry.variance || '0'}%`, 182, yPos);
-                    
-                    pdf.setTextColor(0, 0, 0);
-                    yPos += 6;
-                });
-                
-                // Add footer
-                pdf.setFontSize(8);
-                pdf.setTextColor(150, 150, 150);
-                pdf.text('Onpoint Group - Project Manager Performance Tracker', 20, 285);
-                pdf.text('Confidential', 170, 285);
-                
-                // Save the PDF
-                pdf.save(`Performance_Report_${moment().format('YYYYMMDD_HHmm')}.pdf`);
-                
-                hideLoading();
-                showToast('PDF report generated successfully!', 'success');
-                
-            } catch (error) {
-                console.error('Error generating PDF:', error);
-                hideLoading();
-                showError('Error generating PDF report: ' + error.message);
-            }
-        }
-
-        // ============================================
-        // SAMPLE DATA
-        // ============================================
-        
-        function loadSampleData() {
-            // Set sample project
-            document.getElementById('costCenter').value = 'Onpoint Group HQ';
-            document.getElementById('projectName').value = 'Riverside Mall Construction';
-            document.getElementById('totalIncome').value = '1000000';
-            document.getElementById('totalCost').value = '800000';
-            document.getElementById('duration').value = '12';
-            document.getElementById('durationType').value = 'months';
-            
-            calculateProjections();
-            
-            // Add sample performance records
-            const sampleRecords = [
-                {
-                    date: moment().subtract(1, 'days').format('YYYY-MM-DD'),
-                    projectManager: 'Moses',
-                    dailyIncome: '8500',
-                    summary: 'Completed foundation work ahead of schedule',
-                    costCenter: 'Onpoint Group HQ'
-                },
-                {
-                    date: moment().subtract(2, 'days').format('YYYY-MM-DD'),
-                    projectManager: 'Moses',
-                    dailyIncome: '7200',
-                    summary: 'Material delivery delayed, but team productive',
-                    costCenter: 'Onpoint Group HQ'
-                },
-                {
-                    date: moment().subtract(3, 'days').format('YYYY-MM-DD'),
-                    projectManager: 'Moses',
-                    dailyIncome: '9100',
-                    summary: 'Excellent progress on structural framework',
-                    costCenter: 'Onpoint Group HQ'
-                }
-            ];
-            
-            sampleRecords.forEach(record => {
-                const variance = ((parseFloat(record.dailyIncome) - currentProject.dailyTarget) / currentProject.dailyTarget) * 100;
-                
-                const fullRecord = {
-                    ...record,
-                    projectName: currentProject.projectName,
-                    dailyTarget: currentProject.dailyTarget.toFixed(2),
-                    variance: variance.toFixed(2),
-                    imageLinks: '',
-                    dailySummary: record.summary,
-                    submissionTimestamp: moment().format('YYYY-MM-DD HH:mm:ss'),
-                    projectManager: record.projectManager,
-                    costCenter: record.costCenter
-                };
-                
-                performanceData.push(fullRecord);
-                addToHistoryTable(fullRecord);
-            });
-            
-            updatePerformanceCards();
-            updateCharts();
         }
 
         // ============================================
@@ -1345,6 +298,8 @@
         // ============================================
         
         document.addEventListener('DOMContentLoaded', function() {
+            debugLog('Page loaded');
+            
             // Set default dates
             document.getElementById('startDate').value = moment().format('YYYY-MM-DD');
             document.getElementById('endDate').value = moment().add(30, 'days').format('YYYY-MM-DD');
@@ -1355,11 +310,16 @@
             // Check connection after a short delay
             setTimeout(() => {
                 checkConnection();
-            }, 1000);
+                testDirectAccess(); // Test direct access as well
+            }, 2000);
             
             // Check connection every 30 seconds
             setInterval(checkConnection, 30000);
         });
+
+        // Keep all your existing functions (calculateProjections, submitDailyPerformance, etc.)
+        // ... (copy all your other functions here)
+        
     </script>
 </body>
 </html>
