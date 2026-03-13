@@ -462,11 +462,14 @@
 
     <script>
         // ============================================
-        // CONFIGURATION - UPDATE THIS AFTER DEPLOYMENT
+        // CONFIGURATION - YOUR GOOGLE SHEET AND DRIVE IDs
         // ============================================
-        // IMPORTANT: Replace with your actual deployed Web App URL
-        // Format: https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwl-rvEN2P8yv34vNCA2g-iunEX9oLUuoriZS8zODEdQMkwba_ygeTupStWw5nsI4or/exec';
+        const SHEET_ID = '18IcEjJHQS6Wmqri4lfEBLc47b3piQ8tOcF3aR5tZh6U';
+        const SHEET_NAME = 'Managers';
+        const DRIVE_FOLDER_ID = '1al8guXtgk-PJWwdNvd2umUXYv4AvwXSM';
+        
+        // IMPORTANT: Replace with your actual deployed Web App URL after deployment
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwzq2ufyvByTPa19mEymyQto-tl7NGKwaZtyS04HRWlDzWvhYC3QQR08ctorKhG4H6W/exec';
         
         // ============================================
         // GLOBAL VARIABLES
@@ -508,10 +511,8 @@
             `;
             container.appendChild(toast);
             
-            // Trigger animation
             setTimeout(() => toast.classList.add('show'), 100);
             
-            // Remove after duration
             setTimeout(() => {
                 toast.classList.remove('show');
                 setTimeout(() => toast.remove(), 300);
@@ -588,7 +589,10 @@
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        action: 'test'
+                        action: 'test',
+                        sheetId: SHEET_ID,
+                        sheetName: SHEET_NAME,
+                        driveFolderId: DRIVE_FOLDER_ID
                     }),
                     signal: controller.signal
                 });
@@ -808,7 +812,8 @@
                                 action: 'uploadImage',
                                 fileName: file.name,
                                 fileData: base64Data,
-                                mimeType: file.type
+                                mimeType: file.type,
+                                driveFolderId: DRIVE_FOLDER_ID
                             }),
                             signal: controller.signal
                         });
@@ -921,7 +926,9 @@
                     dailySummary: summary,
                     imageLinks: imageLinks.join(', '),
                     submissionTimestamp: moment().format('YYYY-MM-DD HH:mm:ss'),
-                    userEmail: 'webapp@onpointgroup.com'
+                    userEmail: 'webapp@onpointgroup.com',
+                    sheetId: SHEET_ID,
+                    sheetName: SHEET_NAME
                 };
                 
                 // Send to Google Sheets via Apps Script
@@ -936,7 +943,9 @@
                     },
                     body: JSON.stringify({
                         action: 'savePerformance',
-                        record: record
+                        record: record,
+                        sheetId: SHEET_ID,
+                        sheetName: SHEET_NAME
                     }),
                     signal: controller.signal
                 });
@@ -1078,7 +1087,9 @@
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        action: 'getHistory'
+                        action: 'getHistory',
+                        sheetId: SHEET_ID,
+                        sheetName: SHEET_NAME
                     }),
                     signal: controller.signal
                 });
