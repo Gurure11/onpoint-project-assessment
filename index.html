@@ -424,9 +424,16 @@
     </div>
 
     <script>
-        // IMPORTANT: Your Google Apps Script Web App URL
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw-8Hpgw4GQ9jrqk987ese2kURHHdrEE3ZmC87A0yq7syRq_tMaPMhrnUi7p7Lzsulm3w/exec';
-        
+        // ============================================
+        // CONFIGURATION - UPDATE THESE VALUES
+        // ============================================
+        const CONFIG = {
+            SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbxgS29v1xrsebKEM28m6_PQsshi3a7UWIxyv0MNjODTuunyfrYE2nMenDRBQWXf1Ij40A/exec',
+            SPREADSHEET_ID: '1ToKQ3MDSUZl3T-t-_tMFkH5LXUwlMgrgDFRfBeLqK0o',
+            SHEET_NAME: 'Manager View',
+            DRIVE_FOLDER_ID: '15_6jq4oQ5zNmpokwQhfjStD5AdqHRCYa'
+        };
+
         // Global variables
         let weeklyChart, monthlyChart;
         let performanceData = [];
@@ -482,32 +489,48 @@
             statusText.textContent = 'Checking connection...';
             
             try {
-                const response = await fetch(SCRIPT_URL, {
+                console.log('Testing connection to:', CONFIG.SCRIPT_URL);
+                
+                const response = await fetch(CONFIG.SCRIPT_URL, {
                     method: 'POST',
                     mode: 'cors',
                     headers: {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        action: 'test'
+                        action: 'test',
+                        spreadsheetId: CONFIG.SPREADSHEET_ID,
+                        sheetName: CONFIG.SHEET_NAME
                     })
                 });
                 
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
                 const result = await response.json();
+                console.log('Connection test result:', result);
                 
                 if (result.success) {
                     statusDot.className = 'connection-status status-connected';
                     statusText.textContent = 'Connected to Google Sheets';
-                    console.log('Connected to:', result);
                 } else {
                     statusDot.className = 'connection-status status-disconnected';
-                    statusText.textContent = 'Connection failed';
+                    statusText.textContent = 'Connection failed: ' + (result.message || 'Unknown error');
                 }
                 
             } catch (error) {
                 console.error('Connection error:', error);
                 statusDot.className = 'connection-status status-disconnected';
                 statusText.textContent = 'Disconnected - Check Settings';
+                
+                // Show more detailed error in console
+                console.error('Detailed error:', {
+                    message: error.message,
+                    scriptUrl: CONFIG.SCRIPT_URL,
+                    spreadsheetId: CONFIG.SPREADSHEET_ID,
+                    sheetName: CONFIG.SHEET_NAME
+                });
             }
         }
 
@@ -651,7 +674,7 @@
                     const base64Data = e.target.result.split(',')[1];
                     
                     try {
-                        const response = await fetch(SCRIPT_URL, {
+                        const response = await fetch(CONFIG.SCRIPT_URL, {
                             method: 'POST',
                             mode: 'cors',
                             headers: {
@@ -662,9 +685,13 @@
                                 fileName: file.name,
                                 fileData: base64Data,
                                 mimeType: file.type,
-                                folderId: '1al8guXtgk-PJWwdNvd2umUXYv4AvwXSM'
+                                folderId: CONFIG.DRIVE_FOLDER_ID
                             })
                         });
+                        
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
                         
                         const result = await response.json();
                         
@@ -739,7 +766,7 @@
                     }
                 }
                 
-                // Create performance record matching your Google Sheet headers
+                // Create performance record matching Google Sheet headers
                 const record = {
                     date: moment().format('YYYY-MM-DD'),
                     projectManager: projectManager,
@@ -754,8 +781,12 @@
                     userEmail: 'webapp@onpointgroup.com'
                 };
                 
+                console.log('Submitting record to Google Sheets:', record);
+                console.log('Target Sheet:', CONFIG.SHEET_NAME);
+                console.log('Sheet ID:', CONFIG.SPREADSHEET_ID);
+                
                 // Send to Google Sheets via Apps Script
-                const response = await fetch(SCRIPT_URL, {
+                const response = await fetch(CONFIG.SCRIPT_URL, {
                     method: 'POST',
                     mode: 'cors',
                     headers: {
@@ -763,11 +794,18 @@
                     },
                     body: JSON.stringify({
                         action: 'savePerformance',
+                        spreadsheetId: CONFIG.SPREADSHEET_ID,
+                        sheetName: CONFIG.SHEET_NAME,
                         record: record
                     })
                 });
                 
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
                 const result = await response.json();
+                console.log('Save result:', result);
                 
                 if (result.success) {
                     // Update local data
@@ -800,7 +838,7 @@
                     document.getElementById('loadingOverlay').style.display = 'none';
                     
                     // Show success message
-                    showSuccessMessage('Daily performance submitted successfully to Google Sheets!');
+                    showSuccessMessage(`Daily performance submitted successfully to "${CONFIG.SHEET_NAME}" sheet!`);
                     
                 } else {
                     throw new Error(result.message || 'Failed to save to Google Sheets');
@@ -1091,6 +1129,14 @@
 
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', function() {
+            // Log configuration
+            console.log('Initializing with config:', {
+                scriptUrl: CONFIG.SCRIPT_URL,
+                spreadsheetId: CONFIG.SPREADSHEET_ID,
+                sheetName: CONFIG.SHEET_NAME,
+                driveFolderId: CONFIG.DRIVE_FOLDER_ID
+            });
+            
             // Check connection to Google Apps Script
             checkConnection();
             
