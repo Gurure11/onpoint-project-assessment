@@ -79,7 +79,6 @@
             from { transform: translateY(-20px); opacity: 0; }
             to { transform: translateY(0); opacity: 1; }
         }
-        /* Toast notification styles */
         .toast {
             position: fixed;
             bottom: 20px;
@@ -463,11 +462,11 @@
 
     <script>
         // ============================================
-        // CONFIGURATION - UPDATE THIS URL
+        // CONFIGURATION - UPDATE THIS AFTER DEPLOYMENT
         // ============================================
         // IMPORTANT: Replace with your actual deployed Web App URL
         // Format: https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby_5HDFXJLd_wEZ_AssLinB6tiBRjdOdCwuxUW_ekJTDRP0hVv9vq85YtmXGcAxsFWR/exec';
+        const SCRIPT_URL = 'YOUR_DEPLOYED_SCRIPT_URL_HERE';
         
         // ============================================
         // GLOBAL VARIABLES
@@ -566,7 +565,7 @@
         }
 
         // ============================================
-        // CONNECTION HANDLING - FIXED
+        // CONNECTION HANDLING
         // ============================================
         
         async function checkConnection() {
@@ -579,9 +578,8 @@
             alertBox.classList.add('hidden');
             
             try {
-                // Use a timeout to prevent hanging
                 const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+                const timeoutId = setTimeout(() => controller.abort(), 10000);
                 
                 const response = await fetch(SCRIPT_URL, {
                     method: 'POST',
@@ -798,7 +796,7 @@
                     
                     try {
                         const controller = new AbortController();
-                        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout for images
+                        const timeoutId = setTimeout(() => controller.abort(), 30000);
                         
                         const response = await fetch(SCRIPT_URL, {
                             method: 'POST',
@@ -810,8 +808,7 @@
                                 action: 'uploadImage',
                                 fileName: file.name,
                                 fileData: base64Data,
-                                mimeType: file.type,
-                                folderId: '1al8guXtgk-PJWwdNvd2umUXYv4AvwXSM'
+                                mimeType: file.type
                             }),
                             signal: controller.signal
                         });
@@ -841,7 +838,7 @@
         }
 
         // ============================================
-        // FORM SUBMISSION - FIXED
+        // FORM SUBMISSION
         // ============================================
         
         async function submitDailyPerformance() {
@@ -929,7 +926,7 @@
                 
                 // Send to Google Sheets via Apps Script
                 const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+                const timeoutId = setTimeout(() => controller.abort(), 15000);
                 
                 const response = await fetch(SCRIPT_URL, {
                     method: 'POST',
@@ -1059,7 +1056,7 @@
         }
 
         // ============================================
-        // LOAD HISTORY FROM SERVER - NEW
+        // LOAD HISTORY FROM SERVER
         // ============================================
         
         async function loadHistoryFromServer() {
@@ -1098,6 +1095,9 @@
                     // Clear existing table
                     const tbody = document.getElementById('historyTable');
                     tbody.innerHTML = '';
+                    
+                    // Clear performance data array
+                    performanceData = [];
                     
                     // Add records to table
                     result.data.records.reverse().forEach(record => {
@@ -1277,6 +1277,7 @@
             document.getElementById('totalIncome').value = '1000000';
             document.getElementById('totalCost').value = '800000';
             document.getElementById('duration').value = '12';
+            document.getElementById('durationType').value = 'months';
             
             calculateProjections();
             
@@ -1315,7 +1316,9 @@
                     variance: variance.toFixed(2),
                     imageLinks: '',
                     dailySummary: record.summary,
-                    submissionTimestamp: moment().format('YYYY-MM-DD HH:mm:ss')
+                    submissionTimestamp: moment().format('YYYY-MM-DD HH:mm:ss'),
+                    projectManager: record.projectManager,
+                    costCenter: record.costCenter
                 };
                 
                 performanceData.push(fullRecord);
