@@ -67,6 +67,22 @@
             background: #1e4b8c;
             color: white;
         }
+        .btn-logout {
+            background: transparent;
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .btn-logout:hover {
+            background: rgba(255,255,255,0.1);
+            border-color: rgba(255,255,255,0.5);
+        }
         .success-message {
             background-color: #10b981;
             color: white;
@@ -78,6 +94,35 @@
         @keyframes slideIn {
             from { transform: translateY(-20px); opacity: 0; }
             to { transform: translateY(0); opacity: 1; }
+        }
+        .debug-panel {
+            background-color: #f3f4f6;
+            border-left: 4px solid #1e4b8c;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            font-family: monospace;
+            font-size: 12px;
+            display: none;
+        }
+        .debug-panel.visible {
+            display: block;
+        }
+        .debug-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+        }
+        .debug-content {
+            background-color: #1e1e1e;
+            color: #00ff00;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
         }
     </style>
 </head>
@@ -96,6 +141,15 @@
                         <span id="connectionText" class="text-sm opacity-75">Checking connection...</span>
                     </div>
                     <span class="text-sm opacity-75">Project Manager Performance Tracker</span>
+                    <!-- Debug Toggle Button -->
+                    <button onclick="toggleDebug()" class="text-sm opacity-75 hover:opacity-100" title="Toggle Debug Panel">
+                        <i class="fa-solid fa-bug"></i>
+                    </button>
+                    <!-- Logout Button -->
+                    <a href="index.html" class="btn-logout" title="Logout">
+                        <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                        <span class="hidden md:inline">Logout</span>
+                    </a>
                     <div class="h-8 w-8 bg-white rounded-full flex items-center justify-center">
                         <i class="fa-regular fa-user text-[#1e4b8c]"></i>
                     </div>
@@ -103,6 +157,17 @@
             </div>
         </div>
     </nav>
+
+    <!-- Debug Panel -->
+    <div id="debugPanel" class="debug-panel container mx-auto px-6">
+        <div class="debug-header" onclick="toggleDebugContent()">
+            <h3 class="font-bold text-gray-700">🔧 Debug Information</h3>
+            <i class="fa-solid fa-chevron-down" id="debugChevron"></i>
+        </div>
+        <div id="debugContent" class="debug-content">
+            Loading debug info...
+        </div>
+    </div>
 
     <div class="container mx-auto px-6 py-8">
         <!-- Success Message Container -->
@@ -112,6 +177,10 @@
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
             <h1 class="text-3xl font-bold text-gray-800">Dashboard</h1>
             <div class="flex items-center gap-4">
+                <button onclick="testConnection()" class="btn-outline-blue flex items-center gap-2">
+                    <i class="fa-solid fa-rotate"></i>
+                    Test Connection
+                </button>
                 <button onclick="generatePDFReport()" class="btn-outline-blue flex items-center gap-2">
                     <i class="fa-regular fa-file-pdf"></i>
                     Download Report
@@ -236,10 +305,10 @@
                     </div>
                     <span class="text-sm font-medium text-[#1e4b8c] bg-blue-50 px-3 py-1 rounded-full">Daily Target</span>
                 </div>
-                <h3 class="text-2xl font-bold text-gray-800 mb-2" id="dailyTarget">R 0</h3>
+                <h3 class="text-2xl font-bold text-gray-800 mb-2" id="dailyTarget">R 0.00</h3>
                 <p class="text-sm text-gray-500">Expected daily income</p>
                 <div class="mt-4 pt-4 border-t border-gray-100">
-                    <p class="text-sm text-gray-600"><span class="font-medium">Daily Cost:</span> <span id="dailyCost">R 0</span></p>
+                    <p class="text-sm text-gray-600"><span class="font-medium">Daily Cost:</span> <span id="dailyCost">R 0.00</span></p>
                 </div>
             </div>
             
@@ -250,10 +319,10 @@
                     </div>
                     <span class="text-sm font-medium text-[#1e4b8c] bg-blue-50 px-3 py-1 rounded-full">Weekly Target</span>
                 </div>
-                <h3 class="text-2xl font-bold text-gray-800 mb-2" id="weeklyTarget">R 0</h3>
+                <h3 class="text-2xl font-bold text-gray-800 mb-2" id="weeklyTarget">R 0.00</h3>
                 <p class="text-sm text-gray-500">Expected weekly income</p>
                 <div class="mt-4 pt-4 border-t border-gray-100">
-                    <p class="text-sm text-gray-600"><span class="font-medium">Weekly Cost:</span> <span id="weeklyCost">R 0</span></p>
+                    <p class="text-sm text-gray-600"><span class="font-medium">Weekly Cost:</span> <span id="weeklyCost">R 0.00</span></p>
                 </div>
             </div>
             
@@ -264,10 +333,10 @@
                     </div>
                     <span class="text-sm font-medium text-[#1e4b8c] bg-blue-50 px-3 py-1 rounded-full">Monthly Target</span>
                 </div>
-                <h3 class="text-2xl font-bold text-gray-800 mb-2" id="monthlyTarget">R 0</h3>
+                <h3 class="text-2xl font-bold text-gray-800 mb-2" id="monthlyTarget">R 0.00</h3>
                 <p class="text-sm text-gray-500">Expected monthly income</p>
                 <div class="mt-4 pt-4 border-t border-gray-100">
-                    <p class="text-sm text-gray-600"><span class="font-medium">Monthly Cost:</span> <span id="monthlyCost">R 0</span></p>
+                    <p class="text-sm text-gray-600"><span class="font-medium">Monthly Cost:</span> <span id="monthlyCost">R 0.00</span></p>
                 </div>
             </div>
         </div>
@@ -340,7 +409,7 @@
                 <h3 class="text-3xl font-bold mb-2" id="todayPerformance">0%</h3>
                 <p class="text-sm opacity-90">of daily target achieved</p>
                 <div class="mt-4 pt-4 border-t border-white border-opacity-20">
-                    <p class="text-sm"><span class="opacity-75">Actual:</span> <span id="todayActual">R 0</span></p>
+                    <p class="text-sm"><span class="opacity-75">Actual:</span> <span id="todayActual">R 0.00</span></p>
                 </div>
             </div>
             
@@ -352,7 +421,7 @@
                 <h3 class="text-3xl font-bold mb-2" id="weeklyPerformance">0%</h3>
                 <p class="text-sm opacity-90">of weekly target achieved</p>
                 <div class="mt-4 pt-4 border-t border-white border-opacity-20">
-                    <p class="text-sm"><span class="opacity-75">Actual:</span> <span id="weeklyActual">R 0</span></p>
+                    <p class="text-sm"><span class="opacity-75">Actual:</span> <span id="weeklyActual">R 0.00</span></p>
                 </div>
             </div>
             
@@ -364,7 +433,7 @@
                 <h3 class="text-3xl font-bold mb-2" id="monthlyPerformance">0%</h3>
                 <p class="text-sm opacity-90">of monthly target achieved</p>
                 <div class="mt-4 pt-4 border-t border-white border-opacity-20">
-                    <p class="text-sm"><span class="opacity-75">Actual:</span> <span id="monthlyActual">R 0</span></p>
+                    <p class="text-sm"><span class="opacity-75">Actual:</span> <span id="monthlyActual">R 0.00</span></p>
                 </div>
             </div>
         </div>
@@ -425,14 +494,22 @@
 
     <script>
         // ============================================
-        // CONFIGURATION - UPDATE THESE VALUES
+        // CONFIGURATION - UPDATE THIS WITH YOUR NEW URL
         // ============================================
         const CONFIG = {
-            SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbxgS29v1xrsebKEM28m6_PQsshi3a7UWIxyv0MNjODTuunyfrYE2nMenDRBQWXf1Ij40A/exec',
+            // IMPORTANT: Replace this with your NEW Apps Script URL from Step 1
+            SCRIPT_URL: 'YOUR_NEW_APPS_SCRIPT_URL_HERE', // <-- PASTE YOUR NEW URL HERE
+            
+            // Your Google Sheet configuration
             SPREADSHEET_ID: '1ToKQ3MDSUZl3T-t-_tMFkH5LXUwlMgrgDFRfBeLqK0o',
             SHEET_NAME: 'Manager View',
             DRIVE_FOLDER_ID: '15_6jq4oQ5zNmpokwQhfjStD5AdqHRCYa'
         };
+
+        // Debug variables
+        let debugVisible = false;
+        let debugContentVisible = true;
+        let debugLogs = [];
 
         // Global variables
         let weeklyChart, monthlyChart;
@@ -453,6 +530,56 @@
             weeklyCost: 0,
             monthlyCost: 0
         };
+
+        // ============================================
+        // DEBUG FUNCTIONS
+        // ============================================
+        
+        function addDebugLog(message, data = null) {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${message}` + (data ? '\n' + JSON.stringify(data, null, 2) : '');
+            debugLogs.push(logEntry);
+            updateDebugDisplay();
+            console.log(message, data);
+        }
+
+        function updateDebugDisplay() {
+            const debugContent = document.getElementById('debugContent');
+            if (debugContent) {
+                debugContent.innerHTML = debugLogs.join('\n\n');
+                // Auto-scroll to bottom
+                debugContent.scrollTop = debugContent.scrollHeight;
+            }
+        }
+
+        function toggleDebug() {
+            const panel = document.getElementById('debugPanel');
+            debugVisible = !debugVisible;
+            panel.className = debugVisible ? 'debug-panel visible container mx-auto px-6' : 'debug-panel';
+            addDebugLog('Debug panel ' + (debugVisible ? 'opened' : 'closed'));
+        }
+
+        function toggleDebugContent() {
+            const content = document.getElementById('debugContent');
+            const chevron = document.getElementById('debugChevron');
+            debugContentVisible = !debugContentVisible;
+            content.style.display = debugContentVisible ? 'block' : 'none';
+            chevron.className = debugContentVisible ? 'fa-solid fa-chevron-up' : 'fa-solid fa-chevron-down';
+        }
+
+        // ============================================
+        // HELPER FUNCTIONS
+        // ============================================
+        
+        // Format number with commas and 2 decimal places
+        function formatCurrency(amount) {
+            return 'R ' + amount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        }
+
+        // Format number with commas (for display without currency symbol)
+        function formatNumber(amount) {
+            return amount.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        }
 
         // Set current date
         document.getElementById('currentDate').textContent = moment().format('dddd, MMMM D, YYYY');
@@ -480,16 +607,37 @@
             }, 5000);
         }
 
+        // Test connection manually
+        async function testConnection() {
+            addDebugLog('🔍 Manual connection test initiated');
+            await checkConnection(true);
+        }
+
         // Check connection to Google Apps Script
-        async function checkConnection() {
+        async function checkConnection(manual = false) {
             const statusDot = document.getElementById('connectionStatus');
             const statusText = document.getElementById('connectionText');
             
             statusDot.className = 'connection-status status-checking';
             statusText.textContent = 'Checking connection...';
             
+            addDebugLog('🔄 Checking connection to Google Apps Script...');
+            addDebugLog('URL: ' + CONFIG.SCRIPT_URL);
+            addDebugLog('Sheet ID: ' + CONFIG.SPREADSHEET_ID);
+            addDebugLog('Sheet Name: ' + CONFIG.SHEET_NAME);
+            
+            // Check if URL is set
+            if (CONFIG.SCRIPT_URL === 'https://script.google.com/macros/s/AKfycbyLCELllnjuK3BEMJNEDKxCxvQ_4WCh5La-SUAPnNIdLuB8SFMVDXAwRp2KyYvNBjYFvQ/exec') {
+                const errorMsg = '❌ Please update CONFIG.SCRIPT_URL with your actual Apps Script URL';
+                addDebugLog(errorMsg);
+                statusDot.className = 'connection-status status-disconnected';
+                statusText.textContent = 'Please set Script URL';
+                showError(errorMsg);
+                return;
+            }
+            
             try {
-                console.log('Testing connection to:', CONFIG.SCRIPT_URL);
+                addDebugLog('📤 Sending test request...');
                 
                 const response = await fetch(CONFIG.SCRIPT_URL, {
                     method: 'POST',
@@ -504,33 +652,58 @@
                     })
                 });
                 
+                addDebugLog('📥 Response received');
+                addDebugLog('Status: ' + response.status + ' ' + response.statusText);
+                
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
                 }
                 
-                const result = await response.json();
-                console.log('Connection test result:', result);
+                const responseText = await response.text();
+                addDebugLog('Raw response: ' + responseText);
+                
+                let result;
+                try {
+                    result = JSON.parse(responseText);
+                } catch (e) {
+                    throw new Error('Invalid JSON response: ' + responseText.substring(0, 200));
+                }
+                
+                addDebugLog('Parsed result:', result);
                 
                 if (result.success) {
                     statusDot.className = 'connection-status status-connected';
                     statusText.textContent = 'Connected to Google Sheets';
+                    addDebugLog('✅ Connection successful!');
+                    if (manual) {
+                        showSuccessMessage('Connection test successful!');
+                    }
                 } else {
-                    statusDot.className = 'connection-status status-disconnected';
-                    statusText.textContent = 'Connection failed: ' + (result.message || 'Unknown error');
+                    throw new Error(result.message || 'Connection failed');
                 }
                 
             } catch (error) {
-                console.error('Connection error:', error);
+                addDebugLog('❌ Connection error: ' + error.message);
+                addDebugLog('Error details:', {
+                    name: error.name,
+                    message: error.message,
+                    stack: error.stack
+                });
+                
                 statusDot.className = 'connection-status status-disconnected';
                 statusText.textContent = 'Disconnected - Check Settings';
                 
-                // Show more detailed error in console
-                console.error('Detailed error:', {
-                    message: error.message,
-                    scriptUrl: CONFIG.SCRIPT_URL,
-                    spreadsheetId: CONFIG.SPREADSHEET_ID,
-                    sheetName: CONFIG.SHEET_NAME
-                });
+                // Provide helpful error messages
+                if (error.message.includes('Failed to fetch')) {
+                    showError('Cannot connect to Google Apps Script. Common issues:\n' +
+                             '1. Script URL is incorrect\n' +
+                             '2. Script is not deployed as Web App\n' +
+                             '3. CORS issues - try opening the URL directly in browser');
+                } else if (error.message.includes('401') || error.message.includes('403')) {
+                    showError('Permission denied. Check that your Apps Script is deployed with "Anyone" access');
+                } else {
+                    showError('Connection failed: ' + error.message);
+                }
             }
         }
 
@@ -571,13 +744,13 @@
             const weeklyCost = dailyCost * 7;
             const monthlyCost = dailyCost * 30;
             
-            // Update display
-            document.getElementById('dailyTarget').textContent = `R ${dailyTarget.toFixed(2)}`;
-            document.getElementById('weeklyTarget').textContent = `R ${weeklyTarget.toFixed(2)}`;
-            document.getElementById('monthlyTarget').textContent = `R ${monthlyTarget.toFixed(2)}`;
-            document.getElementById('dailyCost').textContent = `R ${dailyCost.toFixed(2)}`;
-            document.getElementById('weeklyCost').textContent = `R ${weeklyCost.toFixed(2)}`;
-            document.getElementById('monthlyCost').textContent = `R ${monthlyCost.toFixed(2)}`;
+            // Update display with formatted numbers
+            document.getElementById('dailyTarget').textContent = formatCurrency(dailyTarget);
+            document.getElementById('weeklyTarget').textContent = formatCurrency(weeklyTarget);
+            document.getElementById('monthlyTarget').textContent = formatCurrency(monthlyTarget);
+            document.getElementById('dailyCost').textContent = formatCurrency(dailyCost);
+            document.getElementById('weeklyCost').textContent = formatCurrency(weeklyCost);
+            document.getElementById('monthlyCost').textContent = formatCurrency(monthlyCost);
             
             // Store current project
             currentProject = {
@@ -601,6 +774,7 @@
             initializeCharts();
             
             showSuccessMessage('Project projections calculated successfully!');
+            addDebugLog('📊 Projections calculated:', currentProject);
         }
 
         // Initialize charts
@@ -633,6 +807,15 @@
                         legend: {
                             position: 'bottom'
                         }
+                    },
+                    scales: {
+                        y: {
+                            ticks: {
+                                callback: function(value) {
+                                    return 'R' + value.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                                }
+                            }
+                        }
                     }
                 }
             });
@@ -661,9 +844,20 @@
                         legend: {
                             position: 'bottom'
                         }
+                    },
+                    scales: {
+                        y: {
+                            ticks: {
+                                callback: function(value) {
+                                    return 'R' + value.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                                }
+                            }
+                        }
                     }
                 }
             });
+            
+            addDebugLog('📈 Charts initialized');
         }
 
         // Upload image to Google Drive via Apps Script
@@ -672,6 +866,8 @@
                 const reader = new FileReader();
                 reader.onload = async function(e) {
                     const base64Data = e.target.result.split(',')[1];
+                    
+                    addDebugLog('📤 Uploading image: ' + file.name);
                     
                     try {
                         const response = await fetch(CONFIG.SCRIPT_URL, {
@@ -696,13 +892,14 @@
                         const result = await response.json();
                         
                         if (result.success) {
+                            addDebugLog('✅ Image uploaded: ' + result.data.fileUrl);
                             resolve(result.data.fileUrl);
                         } else {
-                            reject(result.message);
+                            throw new Error(result.message);
                         }
                         
                     } catch (error) {
-                        console.error('Upload error:', error);
+                        addDebugLog('❌ Upload error: ' + error.message);
                         reject(error);
                     }
                 };
@@ -718,6 +915,10 @@
             const images = document.getElementById('imageUpload').files;
             const costCenter = document.getElementById('costCenter').value;
             const projectName = document.getElementById('projectName').value;
+            
+            addDebugLog('📝 Submitting daily performance...');
+            addDebugLog('Project Manager: ' + projectManager);
+            addDebugLog('Daily Income: R' + dailyIncome);
             
             // Validation
             if (!projectManager) {
@@ -751,6 +952,7 @@
             try {
                 // Calculate variance
                 const variance = ((dailyIncome - currentProject.dailyTarget) / currentProject.dailyTarget) * 100;
+                addDebugLog('Variance: ' + variance.toFixed(2) + '%');
                 
                 // Upload images to Google Drive
                 const imageLinks = [];
@@ -781,9 +983,7 @@
                     userEmail: 'webapp@onpointgroup.com'
                 };
                 
-                console.log('Submitting record to Google Sheets:', record);
-                console.log('Target Sheet:', CONFIG.SHEET_NAME);
-                console.log('Sheet ID:', CONFIG.SPREADSHEET_ID);
+                addDebugLog('Record to save:', record);
                 
                 // Send to Google Sheets via Apps Script
                 const response = await fetch(CONFIG.SCRIPT_URL, {
@@ -805,7 +1005,7 @@
                 }
                 
                 const result = await response.json();
-                console.log('Save result:', result);
+                addDebugLog('Save result:', result);
                 
                 if (result.success) {
                     // Update local data
@@ -845,6 +1045,7 @@
                 }
                 
             } catch (error) {
+                addDebugLog('❌ Error saving: ' + error.message);
                 console.error('Error saving to Google Sheets:', error);
                 document.getElementById('loadingOverlay').style.display = 'none';
                 showError('Failed to save data to Google Sheets: ' + error.message);
@@ -859,7 +1060,7 @@
             const todayPerformance = (todayTotal / currentProject.dailyTarget) * 100;
             
             document.getElementById('todayPerformance').textContent = `${isNaN(todayPerformance) ? '0' : todayPerformance.toFixed(1)}%`;
-            document.getElementById('todayActual').textContent = `R ${todayTotal.toFixed(2)}`;
+            document.getElementById('todayActual').textContent = formatCurrency(todayTotal);
             
             // Calculate weekly performance
             const weekStart = moment().startOf('week');
@@ -868,7 +1069,7 @@
             const weekPerformance = (weekTotal / currentProject.weeklyTarget) * 100;
             
             document.getElementById('weeklyPerformance').textContent = `${isNaN(weekPerformance) ? '0' : weekPerformance.toFixed(1)}%`;
-            document.getElementById('weeklyActual').textContent = `R ${weekTotal.toFixed(2)}`;
+            document.getElementById('weeklyActual').textContent = formatCurrency(weekTotal);
             
             // Calculate monthly performance
             const monthStart = moment().startOf('month');
@@ -877,7 +1078,7 @@
             const monthPerformance = (monthTotal / currentProject.monthlyTarget) * 100;
             
             document.getElementById('monthlyPerformance').textContent = `${isNaN(monthPerformance) ? '0' : monthPerformance.toFixed(1)}%`;
-            document.getElementById('monthlyActual').textContent = `R ${monthTotal.toFixed(2)}`;
+            document.getElementById('monthlyActual').textContent = formatCurrency(monthTotal);
         }
 
         // Add record to history table
@@ -895,8 +1096,8 @@
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${record.projectManager}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${record.costCenter || '-'}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${record.projectName}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">R ${record.dailyTarget}</td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">R ${record.dailyIncome}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">R ${formatNumber(parseFloat(record.dailyTarget))}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">R ${formatNumber(parseFloat(record.dailyIncome))}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm ${varianceClass}">${record.variance}%</td>
                 <td class="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">${record.dailySummary || '-'}</td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -975,9 +1176,9 @@
                 
                 pdf.setFontSize(10);
                 pdf.setTextColor(0, 0, 0);
-                pdf.text(`Daily Target: R ${currentProject.dailyTarget.toFixed(2)}`, 20, 68);
-                pdf.text(`Weekly Target: R ${currentProject.weeklyTarget.toFixed(2)}`, 20, 74);
-                pdf.text(`Monthly Target: R ${currentProject.monthlyTarget.toFixed(2)}`, 20, 80);
+                pdf.text(`Daily Target: ${formatCurrency(currentProject.dailyTarget)}`, 20, 68);
+                pdf.text(`Weekly Target: ${formatCurrency(currentProject.weeklyTarget)}`, 20, 74);
+                pdf.text(`Monthly Target: ${formatCurrency(currentProject.monthlyTarget)}`, 20, 80);
                 
                 // Add current performance
                 const todayActual = document.getElementById('todayActual').textContent;
@@ -1036,8 +1237,8 @@
                     pdf.text(entry.date, 22, yPos);
                     pdf.text(entry.projectManager.substring(0, 8), 52, yPos);
                     pdf.text((entry.costCenter || '').substring(0, 10), 82, yPos);
-                    pdf.text(`R${entry.dailyTarget}`, 122, yPos);
-                    pdf.text(`R${entry.dailyIncome}`, 152, yPos);
+                    pdf.text(`R${formatNumber(parseFloat(entry.dailyTarget))}`, 122, yPos);
+                    pdf.text(`R${formatNumber(parseFloat(entry.dailyIncome))}`, 152, yPos);
                     
                     const variance = parseFloat(entry.variance);
                     if (variance >= 0) {
@@ -1130,12 +1331,8 @@
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', function() {
             // Log configuration
-            console.log('Initializing with config:', {
-                scriptUrl: CONFIG.SCRIPT_URL,
-                spreadsheetId: CONFIG.SPREADSHEET_ID,
-                sheetName: CONFIG.SHEET_NAME,
-                driveFolderId: CONFIG.DRIVE_FOLDER_ID
-            });
+            addDebugLog('🚀 Application starting...');
+            addDebugLog('Configuration:', CONFIG);
             
             // Check connection to Google Apps Script
             checkConnection();
